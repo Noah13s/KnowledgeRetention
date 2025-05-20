@@ -3286,6 +3286,7 @@ MonoBehaviour:
   numPredict: 256
   slot: -1
   grammar: 
+  grammarJSON: 
   cachePrompt: 1
   seed: 0
   temperature: 0.2
@@ -3295,7 +3296,6 @@ MonoBehaviour:
   repeatPenalty: 1.1
   presencePenalty: 0
   frequencyPenalty: 0
-  tfsZ: 1
   typicalP: 1
   repeatLastN: 64
   penalizeNl: 1
@@ -3311,8 +3311,10 @@ MonoBehaviour:
   playerName: user
   AIName: assistant
   prompt: "You are an expert assessment designer specializing in creating educational
-    questions. When given a subject, you will generate one clear question using the
-    QuizQuestion type.\r\nThe QuizQuestion type has two distinct formats that cannot
+    questions. You always respond with a single, fully valid JSON object using one
+    of the two QuizQuestion formats described below.\nYou must never include any
+    explanation, markdown formatting (like triple backticks), or commentary. Only
+    output the raw JSON.\nThe QuizQuestion type has two distinct formats that cannot
     be mixed:\r\nText Input Format:\r\nQuestionType: QuizQuestion (Text Input)\r\nQuestion:
     [Your question]\r\nOptions: Text Input Required\r\nMultiple Choice Format:\r\nQuestionType:
     QuizQuestion (Multiple Choice)\r\nQuestion: [Your question]\r\nOptions: [2-4
@@ -3320,17 +3322,20 @@ MonoBehaviour:
     phrases\r\nNever respond something eslse than the JSON\nMake sure the JSON is
     well formatted\nNever combine text input and multiple choice\r\nUse consistent
     format labels\r\nProvide one clear correct answer\r\nMatch question complexity
-    to subject level\r\n\rMake every question unique\n\r\nExample 1 for Text Input:\r\n{\r\n 
-    \"QuestionType\": \"QuizQuestion (Text Input)\",\r\n  \"Question\": \"What is
-    the chemical symbol for gold?\",\r\n  \"Options\": \"Text Input Required\",\r\n 
-    \"CorrectAnswer\": [\"Au\", \"Au3+\"]\r\n}\r\nExample 2 for Multiple Choice:\r\n{\r\n 
-    \"QuestionType\": \"QuizQuestion (Multiple Choice)\",\r\n  \"Question\": \"What
-    is the chemical symbol for gold?\",\r\n  \"Options\": {\r\n    \"A\": \"Au\",\r\n   
-    \"B\": \"Ag\",\r\n    \"C\": \"Fe\",\r\n    \"D\": \"Cu\"\r\n  },\r\n  \"CorrectAnswer\":
-    [\"A\"]\r\n}"
+    to subject level\r\n\rMake every question unique\nRandomize every response: vary
+    question wording, shuffle option letters and distractors, choose among equivalent
+    phrasings\u2014without ever breaking JSON validity or changing labels.\n\r\nExample
+    1 for Text Input:\r\n{\r\n  \"QuestionType\": \"QuizQuestion (Text Input)\",\r\n 
+    \"Question\": \"What is the chemical symbol for gold?\",\r\n  \"Options\": \"Text
+    Input Required\",\r\n  \"CorrectAnswer\": [\"Au\", \"Au3+\"]\r\n}\r\nExample
+    2 for Multiple Choice:\r\n{\r\n  \"QuestionType\": \"QuizQuestion (Multiple Choice)\",\r\n 
+    \"Question\": \"What is the chemical symbol for gold?\",\r\n  \"Options\": {\r\n   
+    \"A\": \"Au\",\r\n    \"B\": \"Ag\",\r\n    \"C\": \"Fe\",\r\n    \"D\": \"Cu\"\r\n 
+    },\r\n  \"CorrectAnswer\": [\"A\"]\r\n}"
   setNKeepToPrompt: 1
   chat: []
   grammarString: 
+  grammarJSONString: 
 --- !u!4 &1650552730
 Transform:
   m_ObjectHideFlags: 0
@@ -3421,7 +3426,7 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   contextSize: 8192
   batchSize: 512
-  model: llama-3.2-1b-instruct-q4_k_m.gguf
+  model: llama-3.2-3b-instruct-q4_k_m.gguf
   chatTemplate: llama3 chat
   lora: 
   loraWeights: 
@@ -3434,7 +3439,7 @@ MonoBehaviour:
   minContextLength: 0
   maxContextLength: 131072
   embeddingsOnly: 0
-  embeddingLength: 2048
+  embeddingLength: 3072
 --- !u!4 &1702181069
 Transform:
   m_ObjectHideFlags: 0
