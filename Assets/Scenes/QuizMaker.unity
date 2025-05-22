@@ -1546,9 +1546,8 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: design a question that makes the user guess the word
-            "atom" i want the question to be a multichoice do not make a riddle (Generate
-            questions directly without introductory phrases)
+          m_StringArgument: 'design a question that makes the user guess the word
+            "atom" i want the question to be a multichoice do not make a riddle '
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &698725581
@@ -3426,8 +3425,8 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   contextSize: 8192
   batchSize: 512
-  model: llama-3.2-3b-instruct-q4_k_m.gguf
-  chatTemplate: llama3 chat
+  model: Qwen3-1.7B-Q4_K_M.gguf
+  chatTemplate: qwen3
   lora: 
   loraWeights: 
   flashAttention: 0
@@ -3437,9 +3436,9 @@ MonoBehaviour:
   SSLKey: 
   SSLKeyPath: 
   minContextLength: 0
-  maxContextLength: 131072
+  maxContextLength: 40960
   embeddingsOnly: 0
-  embeddingLength: 3072
+  embeddingLength: 2048
 --- !u!4 &1702181069
 Transform:
   m_ObjectHideFlags: 0
