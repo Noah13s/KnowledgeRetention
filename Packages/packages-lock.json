@@ -5,7 +5,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "41d392d35504f3184075b9705257ce79f6e92e12"
+      "hash": "891497bf8ad6d10f9005b421c31b6b19a9d112df"
     },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
@@ -58,6 +58,13 @@
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0"
       }
+    },
+    "com.yasirkula.nativefilepicker": {
+      "version": "https://github.com/yasirkula/UnityNativeFilePicker.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "de7bbba0dbbdde9a87f0be0c504fc8ed81426a7f"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
