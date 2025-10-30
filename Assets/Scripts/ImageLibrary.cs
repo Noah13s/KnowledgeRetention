@@ -1,15 +1,27 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ImageLibrary : MonoBehaviour
 {
+    [Header("Tools")]
+    [SerializeField] private Button rename;
+    [SerializeField] private Button delete;
+    [Header("Setup")]
     [SerializeField] private ScrollRect imageScrollRect;
     [SerializeField] private GameObject imagePrefab;
 
+    [Header("Hidden")]
+    private List<ImageElement> SelectedElements = new();
+
     private void Start()
+    {
+        RefreshImageList();
+    }
+
+    private void BuildImageLibrary()
     {
         if (imageScrollRect == null) { return; }
         string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
@@ -17,6 +29,12 @@ public class ImageLibrary : MonoBehaviour
         foreach (var images in GetImageFilePaths())
         {
             var _imagePrefab = Instantiate(imagePrefab, imageScrollRect.content);
+            var imageElemScript = _imagePrefab.GetComponent<ImageElement>();
+            imageElemScript.imageName.text = Path.GetFileName(images);
+            imageElemScript.imagePath = images;
+            _imagePrefab.GetComponent<Toggle>().onValueChanged.AddListener((bool value) => { 
+                NumberOfSelection(); 
+            });
             // Read image bytes
             byte[] imageBytes = File.ReadAllBytes(images);
 
@@ -66,5 +84,188 @@ public class ImageLibrary : MonoBehaviour
         }
 
         return imagePaths;
+    }
+
+    public void RefreshImageList()
+    {
+        ClearImageList();
+        BuildImageLibrary();
+    }
+
+    private void ClearImageList()
+    {
+        if (imageScrollRect == null || imageScrollRect.content == null)
+            return;
+
+        Transform contentTransform = imageScrollRect.content;
+
+        // Destroy all existing children under the ScrollRect content
+        for (int i = contentTransform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(contentTransform.GetChild(i).gameObject);
+        }
+    }
+
+    private int NumberOfSelection()
+    {
+        SelectedElements.Clear();
+        foreach (Transform child in imageScrollRect.content)
+        {
+            if (child.GetComponent<ImageElement>().isSelected)
+                SelectedElements.Add(child.gameObject.GetComponent<ImageElement>());
+        }
+        HandleTools();
+        return SelectedElements.Count;
+    }
+
+    private void HandleTools()
+    {
+        if (SelectedElements.Count == 1)
+        {
+            rename.interactable = true;
+        }
+        else
+        {
+            rename.interactable = false;
+        }
+
+        if (SelectedElements.Count > 0)
+        {
+            delete.interactable = true;
+        }
+        else
+        {
+            delete.interactable = false;
+        }
+    }
+
+    public void DeleteImage()
+    {
+        if (SelectedElements.Count < 1) { return; }
+        var _SelectedElements = SelectedElements;
+        foreach (ImageElement image in _SelectedElements)
+        {
+            if (image.isSelected)
+            {
+                image.DeleteImage();
+                Destroy(image.gameObject);
+            }
+        }
+        Invoke(nameof(RefreshImageList), 0.05f);
+        Invoke(nameof(NumberOfSelection), 0.05f);
+    }
+
+    public void RenameImage(TMP_InputField newName)
+    {
+        // Allow renaming only when exactly one image is selected
+        if (SelectedElements.Count != 1)
+        {
+            Debug.LogWarning("Please select exactly one image to rename.");
+            return;
+        }
+
+        // Get selected image
+        var imageElement = SelectedElements[0];
+
+        // Validate the new name
+        string newFileName = newName.text.Trim();
+        if (string.IsNullOrEmpty(newFileName))
+        {
+            Debug.LogWarning("New image name cannot be empty.");
+            return;
+        }
+
+        // Preserve the original file extension
+        string oldPath = imageElement.imagePath;
+        string extension = Path.GetExtension(oldPath);
+        string folder = Path.GetDirectoryName(oldPath);
+        string newPath = Path.Combine(folder, newFileName + extension);
+
+        try
+        {
+            // If a file with that name already exists, create a unique one
+            int counter = 1;
+            while (File.Exists(newPath))
+            {
+                newPath = Path.Combine(folder, $"{newFileName}_{counter}{extension}");
+                counter++;
+            }
+
+            // Rename (move) the file
+            File.Move(oldPath, newPath);
+
+            // Update the ImageElement data
+            imageElement.imagePath = newPath;
+            imageElement.imageName.text = Path.GetFileName(newPath);
+
+            Debug.Log($"Image renamed to: {Path.GetFileName(newPath)}");
+
+            // Optional: refresh the gallery
+            RefreshImageList();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error while renaming image: {e.Message}");
+        }
+    }
+
+    public void ImportImage()
+    {
+        // Define allowed image file types
+        string[] imageFileTypes = new string[]
+        {
+        NativeFilePicker.ConvertExtensionToFileType("png"),
+        NativeFilePicker.ConvertExtensionToFileType("jpg"),
+        NativeFilePicker.ConvertExtensionToFileType("jpeg")
+        };
+
+        // Pick an image file
+        NativeFilePicker.PickFile((path) =>
+        {
+            if (path == null)
+            {
+                Debug.Log("Import cancelled by user.");
+                return;
+            }
+
+            Debug.Log("Picked image: " + path);
+
+            try
+            {
+                // Create target directory if not exists
+                string imagesDir = Path.Combine(Application.persistentDataPath, "images");
+                if (!Directory.Exists(imagesDir))
+                    Directory.CreateDirectory(imagesDir);
+
+                // Get file name
+                string fileName = Path.GetFileName(path);
+                string destPath = Path.Combine(imagesDir, fileName);
+
+                // If file with same name exists, create unique name
+                int counter = 1;
+                while (File.Exists(destPath))
+                {
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    string ext = Path.GetExtension(fileName);
+                    destPath = Path.Combine(imagesDir, $"{nameWithoutExt}_{counter}{ext}");
+                    counter++;
+                }
+
+                // Copy image to persistent data folder
+                File.Copy(path, destPath);
+
+                Debug.Log($"Image successfully imported to: {destPath}");
+
+                // Optional: refresh UI or trigger event
+                // profileListToRefresh.RefreshProfileList(); 
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error while importing image: {e.Message}");
+            }
+
+        }, imageFileTypes);
+
+        RefreshImageList();
     }
 }
