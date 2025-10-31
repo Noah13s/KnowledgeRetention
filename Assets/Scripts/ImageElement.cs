@@ -2,6 +2,7 @@ using TMPro;
 using System.IO;
 using UnityEngine;
 
+
 public class ImageElement : MonoBehaviour
 {
     [SerializeField] public TextMeshProUGUI imageName;

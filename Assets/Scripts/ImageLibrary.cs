@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,14 +13,25 @@ public class ImageLibrary : MonoBehaviour
     [Header("Setup")]
     [SerializeField] private ScrollRect imageScrollRect;
     [SerializeField] private GameObject imagePrefab;
+    [SerializeField] private TMP_Dropdown sortDropdown;
 
     [Header("Hidden")]
     private List<ImageElement> SelectedElements = new();
 
     private void Start()
     {
+        // Example options: 0 = Name (A-Z), 1 = Name (Z-A), 2 = Date (Newest), 3 = Date (Oldest)
+        sortDropdown.ClearOptions();
+        sortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)", "Date (Newest)", "Date (Oldest)" });
+        sortDropdown.onValueChanged.AddListener(OnSortOptionChanged);
         RefreshImageList();
     }
+
+    private void OnSortOptionChanged(int optionIndex)
+    {
+        BuildImageLibrary(optionIndex);
+    }
+
 
     private void BuildImageLibrary()
     {
@@ -58,6 +70,60 @@ public class ImageLibrary : MonoBehaviour
         }
     }
 
+    private void BuildImageLibrary(int sortMode = 0)
+    {
+        if (imageScrollRect == null) { return; }
+
+        string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
+        var imagePaths = GetImageFilePaths();
+
+        // Apply sorting before displaying
+        switch (sortMode)
+        {
+            case 0: // Name (A-Z)
+                imagePaths = imagePaths.OrderBy(f => Path.GetFileName(f)).ToList();
+                break;
+            case 1: // Name (Z-A)
+                imagePaths = imagePaths.OrderByDescending(f => Path.GetFileName(f)).ToList();
+                break;
+            case 2: // Date (Newest)
+                imagePaths = imagePaths.OrderByDescending(f => File.GetCreationTime(f)).ToList();
+                break;
+            case 3: // Date (Oldest)
+                imagePaths = imagePaths.OrderBy(f => File.GetCreationTime(f)).ToList();
+                break;
+        }
+
+        // Clear existing UI elements
+        foreach (Transform child in imageScrollRect.content)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Populate UI
+        foreach (var imagePath in imagePaths)
+        {
+            var prefabInstance = Instantiate(imagePrefab, imageScrollRect.content);
+            var imageElemScript = prefabInstance.GetComponent<ImageElement>();
+
+            imageElemScript.imageName.text = Path.GetFileName(imagePath);
+            imageElemScript.imagePath = imagePath;
+            prefabInstance.GetComponent<Toggle>().onValueChanged.AddListener((bool value) => { NumberOfSelection(); });
+
+            byte[] imageBytes = File.ReadAllBytes(imagePath);
+            Texture2D texture = new Texture2D(2, 2);
+            if (!texture.LoadImage(imageBytes))
+            {
+                Debug.LogError("Failed to load image from bytes!");
+                continue;
+            }
+
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            prefabInstance.GetComponent<Image>().sprite = sprite;
+        }
+    }
+
+
     /// <summary>
     /// Retrieves a list of image file paths in the "Images" folder under Application.persistentDataPath.
     /// </summary>
@@ -89,7 +155,7 @@ public class ImageLibrary : MonoBehaviour
     public void RefreshImageList()
     {
         ClearImageList();
-        BuildImageLibrary();
+        BuildImageLibrary(sortDropdown.value);
     }
 
     private void ClearImageList()
