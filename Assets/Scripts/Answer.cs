@@ -1,10 +1,12 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Answer : MonoBehaviour
 {
-    [SerializeField] Toggle correctAnswer;
-    [SerializeField] Toggle aiAnswer;
+    public TMP_InputField answerText;
+    public Toggle correctAnswer;
+    public Toggle aiAnswer;
 
     private void Start()
     {
@@ -15,8 +17,6 @@ public class Answer : MonoBehaviour
             correctAnswer.interactable = !value;
         });
     }
-
-
 
     public void RemoveAnswer()
     {
