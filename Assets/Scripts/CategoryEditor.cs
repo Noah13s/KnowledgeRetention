@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -13,16 +13,19 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private TMP_Dropdown sortDropdown;
     [SerializeField] private Button renameButton;
     [SerializeField] private Button deleteButton;
+    [SerializeField] private Button setImageButton;
     [SerializeField] private Button addButton;
     [SerializeField] private Button openButton;
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text currentPathLabel;
+    [Header("Setup")]
+    [SerializeField] ImageLibrary imageLibrary;
 
     private List<CategoryElement> selectedCategories = new();
 
     private string jsonFilePath;
     private CategoryManager.CategoryListWrapper rootData = new();
-    private List<CategoryManager.Category> currentCategoryList; // what we�re displaying now
+    private List<CategoryManager.Category> currentCategoryList; // what we’re displaying now
     private Stack<List<CategoryManager.Category>> navigationStack = new(); // for back navigation
     private Stack<string> pathStack = new(); // for displaying the path
 
@@ -38,10 +41,11 @@ public class CategoryLibrary : MonoBehaviour
         EnterCategory(rootData.categories, "Root");
     }
 
+
     private void SetupSortDropdown()
     {
         sortDropdown.ClearOptions();
-        sortDropdown.AddOptions(new List<string> { "Name (A�Z)", "Name (Z�A)" });
+        sortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)" });
         sortDropdown.onValueChanged.AddListener((int index) => RefreshUI());
     }
 
@@ -153,6 +157,7 @@ public class CategoryLibrary : MonoBehaviour
         renameButton.interactable = singleSelection;
         deleteButton.interactable = hasSelection;
         openButton.interactable = singleSelection; // Always openable when one is selected
+        setImageButton.interactable = singleSelection;
     }
 
 
@@ -178,6 +183,64 @@ public class CategoryLibrary : MonoBehaviour
         // Refresh toolbar buttons (disable everything)
         HandleToolbarButtons();
     }
+
+    public void SetImage()
+    {
+        if (selectedCategories.Count != 1)
+        {
+            Debug.LogWarning("Please select exactly one category to set an image.");
+            return;
+        }
+
+        var categoryElement = selectedCategories[0];
+
+        // Safety check
+        if (imageLibrary == null)
+        {
+            Debug.LogError("ImageLibrary reference not assigned in the inspector!");
+            return;
+        }
+
+        imageLibrary.mode = ImageLibrary.Mode.Select;
+
+        // Enable the image library UI
+        imageLibrary.gameObject.SetActive(true);
+
+        // Temporarily disable the button to prevent re-entry
+        setImageButton.interactable = false;
+
+        // Assign callback to handle when the user selects an image
+        imageLibrary.onSelectCallback = (string fullPath) =>
+        {
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarning("No image path returned from ImageLibrary.");
+                imageLibrary.gameObject.SetActive(false);
+                setImageButton.interactable = true;
+                return;
+            }
+
+            // ✅ Convert full path to relative path within persistent data
+            string persistentPath = Application.persistentDataPath;
+            string relativePath = fullPath.Replace(persistentPath + Path.DirectorySeparatorChar, "");
+
+            // ✅ Store only relative path
+            categoryElement.CategoryData.ImageFile = relativePath;
+
+            Debug.Log($"Stored relative image path: {relativePath}");
+
+            // ✅ Close the image library UI
+            imageLibrary.gameObject.SetActive(false);
+            setImageButton.interactable = true;
+
+            // ✅ Save and refresh
+            SaveCategories();
+            RefreshUI();
+        };
+    }
+
+
+
 
 
     public void AddCategory(TMP_InputField nameField)

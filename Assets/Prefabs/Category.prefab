@@ -379,8 +379,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   categoryNameText: {fileID: 8608614376762827286}
   toggle: {fileID: 3928340815850202895}
+  image: {fileID: 1694867693335586624}
   CategoryData:
     Name: 
     Description: 
+    ImageFile: 
     quizFiles: []
     subCategories: []

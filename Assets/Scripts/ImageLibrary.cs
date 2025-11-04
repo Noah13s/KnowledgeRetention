@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,16 +8,32 @@ using UnityEngine.UI;
 
 public class ImageLibrary : MonoBehaviour
 {
+    [System.Serializable]
+    public enum Mode
+    {
+        Edit,
+        Select
+    }
+
     [Header("Tools")]
+    [SerializeField] private Button import;
+    [SerializeField] private TMP_InputField input;
+    [SerializeField] private Button open;
     [SerializeField] private Button rename;
     [SerializeField] private Button delete;
     [Header("Setup")]
+    [SerializeField] public Mode mode;
     [SerializeField] private ScrollRect imageScrollRect;
     [SerializeField] private GameObject imagePrefab;
     [SerializeField] private TMP_Dropdown sortDropdown;
 
     [Header("Hidden")]
-    private List<ImageElement> SelectedElements = new();
+    public List<ImageElement> SelectedElements = new();
+    public Action<string> onSelectCallback;
+
+
+    // New: ToggleGroup to enforce single selection in Select mode
+    private ToggleGroup selectionGroup;
 
     private void Start()
     {
@@ -27,11 +44,41 @@ public class ImageLibrary : MonoBehaviour
         RefreshImageList();
     }
 
+    private void OnEnable()
+    {
+        RefreshImageList();
+    }
+
     private void OnSortOptionChanged(int optionIndex)
     {
         BuildImageLibrary(optionIndex);
     }
 
+    // Ensure a ToggleGroup exists on the content transform (for Select mode)
+    private void EnsureToggleGroup()
+    {
+        if (imageScrollRect == null || imageScrollRect.content == null) return;
+
+        if (selectionGroup == null)
+        {
+            selectionGroup = imageScrollRect.content.GetComponent<ToggleGroup>();
+            if (selectionGroup == null)
+                selectionGroup = imageScrollRect.content.gameObject.AddComponent<ToggleGroup>();
+
+            // allowSwitchOff true -> user can unselect the single selected toggle
+            selectionGroup.allowSwitchOff = true;
+        }
+    }
+
+    // Remove ToggleGroup (when switching back to Edit mode)
+    private void RemoveToggleGroup()
+    {
+        if (selectionGroup != null)
+        {
+            Destroy(selectionGroup);
+            selectionGroup = null;
+        }
+    }
 
     private void BuildImageLibrary()
     {
@@ -42,11 +89,34 @@ public class ImageLibrary : MonoBehaviour
         {
             var _imagePrefab = Instantiate(imagePrefab, imageScrollRect.content);
             var imageElemScript = _imagePrefab.GetComponent<ImageElement>();
+
             imageElemScript.imageName.text = Path.GetFileName(images);
             imageElemScript.imagePath = images;
-            _imagePrefab.GetComponent<Toggle>().onValueChanged.AddListener((bool value) => { 
-                NumberOfSelection(); 
-            });
+
+            Toggle t = _imagePrefab.GetComponent<Toggle>();
+            if (t != null)
+            {
+                // assign to group if in Select mode
+                if (mode == Mode.Select)
+                {
+                    EnsureToggleGroup();
+                    t.group = selectionGroup;
+                }
+                else
+                {
+                    t.group = null;
+                }
+
+                // Ensure ImageElement selection reflects toggle and update selection count on change
+                t.isOn = imageElemScript.isSelected;
+                t.onValueChanged.AddListener((bool value) =>
+                {
+                    if (imageElemScript != null)
+                        imageElemScript.isSelected = value;
+                    NumberOfSelection();
+                });
+            }
+
             // Read image bytes
             byte[] imageBytes = File.ReadAllBytes(images);
 
@@ -100,6 +170,12 @@ public class ImageLibrary : MonoBehaviour
             Destroy(child.gameObject);
         }
 
+        // If we're in Select mode, ensure toggle group exists
+        if (mode == Mode.Select)
+            EnsureToggleGroup();
+        else
+            RemoveToggleGroup();
+
         // Populate UI
         foreach (var imagePath in imagePaths)
         {
@@ -108,7 +184,29 @@ public class ImageLibrary : MonoBehaviour
 
             imageElemScript.imageName.text = Path.GetFileName(imagePath);
             imageElemScript.imagePath = imagePath;
-            prefabInstance.GetComponent<Toggle>().onValueChanged.AddListener((bool value) => { NumberOfSelection(); });
+
+            Toggle t = prefabInstance.GetComponent<Toggle>();
+            if (t != null)
+            {
+                if (mode == Mode.Select)
+                {
+                    EnsureToggleGroup();
+                    t.group = selectionGroup;
+                }
+                else
+                {
+                    t.group = null;
+                }
+
+                // initialize isSelected to toggle state and keep them in sync
+                t.isOn = imageElemScript.isSelected;
+                t.onValueChanged.AddListener((bool value) =>
+                {
+                    if (imageElemScript != null)
+                        imageElemScript.isSelected = value;
+                    NumberOfSelection();
+                });
+            }
 
             byte[] imageBytes = File.ReadAllBytes(imagePath);
             Texture2D texture = new Texture2D(2, 2);
@@ -155,7 +253,37 @@ public class ImageLibrary : MonoBehaviour
     public void RefreshImageList()
     {
         ClearImageList();
+        SetupMode();
         BuildImageLibrary(sortDropdown.value);
+    }
+
+    private void SetupMode()
+    {
+        switch (mode)
+        {
+            case Mode.Edit:
+                // Remove toggle group in edit mode so multiple selections are possible
+                RemoveToggleGroup();
+
+                rename.gameObject.SetActive(true);
+                delete.gameObject.SetActive(true);
+                import.gameObject.SetActive(true);
+                input.gameObject.SetActive(true);
+                open.gameObject.SetActive(false);
+                break;
+            case Mode.Select:
+                // Ensure toggle group exists for single selection
+                EnsureToggleGroup();
+
+                rename.gameObject.SetActive(false);
+                delete.gameObject.SetActive(false);
+                import.gameObject.SetActive(false);
+                input.gameObject.SetActive(false);
+                open.gameObject.SetActive(true);
+                break;
+        }
+        // clear any previous selection state
+        SelectedElements.Clear();
     }
 
     private void ClearImageList()
@@ -177,8 +305,12 @@ public class ImageLibrary : MonoBehaviour
         SelectedElements.Clear();
         foreach (Transform child in imageScrollRect.content)
         {
-            if (child.GetComponent<ImageElement>().isSelected)
-                SelectedElements.Add(child.gameObject.GetComponent<ImageElement>());
+            var elem = child.GetComponent<ImageElement>();
+            if (elem != null && elem.isSelected)
+            {
+                SelectedElements.Add(elem); 
+                input.text = Path.GetFileNameWithoutExtension(elem.imageName.text);
+            }
         }
         HandleTools();
         return SelectedElements.Count;
@@ -189,10 +321,14 @@ public class ImageLibrary : MonoBehaviour
         if (SelectedElements.Count == 1)
         {
             rename.interactable = true;
+            input.interactable = true;
+            open.interactable = true;
         }
         else
         {
             rename.interactable = false;
+            input.interactable = false;
+            open.interactable = false;
         }
 
         if (SelectedElements.Count > 0)
@@ -219,6 +355,21 @@ public class ImageLibrary : MonoBehaviour
         }
         Invoke(nameof(RefreshImageList), 0.05f);
         Invoke(nameof(NumberOfSelection), 0.05f);
+    }
+
+    public void OpenImage()
+    {
+        // Allow renaming only when exactly one image is selected
+        if (SelectedElements.Count != 1)
+        {
+            Debug.LogWarning("Please select exactly one image to rename.");
+            return;
+        }
+
+        var imageElement = SelectedElements[0];
+
+        onSelectCallback?.Invoke(imageElement.imagePath);
+
     }
 
     public void RenameImage(TMP_InputField newName)
@@ -275,14 +426,27 @@ public class ImageLibrary : MonoBehaviour
         }
     }
 
+    public Sprite GetOpenedImage()
+    {
+        if (SelectedElements.Count == 1)
+        {
+            var element = SelectedElements[0];
+            var image = element.GetComponent<Image>();
+            if (image != null)
+                return image.sprite;
+        }
+
+        Debug.LogWarning("No image selected or multiple selections.");
+        return null;
+    }
+
     public void ImportImage()
     {
         // Define allowed image file types
-        string[] imageFileTypes = new string[]
-        {
-        NativeFilePicker.ConvertExtensionToFileType("png"),
-        NativeFilePicker.ConvertExtensionToFileType("jpg"),
-        NativeFilePicker.ConvertExtensionToFileType("jpeg")
+        string[] imageFileTypes = new string[] {
+            NativeFilePicker.ConvertExtensionToFileType("png"),
+            NativeFilePicker.ConvertExtensionToFileType("jpg"),
+            NativeFilePicker.ConvertExtensionToFileType("jpeg")
         };
 
         // Pick an image file

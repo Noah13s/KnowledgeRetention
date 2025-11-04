@@ -9,6 +9,7 @@ public class CategoryManager : MonoBehaviour
     {
         public string Name;
         public string Description;
+        public string ImageFile;
         public List<string> quizFiles;
         public List<Category> subCategories; // Hierarchical child categories
     }
@@ -81,6 +82,7 @@ public class CategoryManager : MonoBehaviour
         {
             Name = "General Knowledge",
             Description = "Default category",
+            ImageFile = "",
             quizFiles = new List<string> { "sample_quiz.json" },
             subCategories = new List<Category>()
         };
@@ -118,4 +120,6 @@ public class CategoryManager : MonoBehaviour
                 PrintCategoryRecursive(sub, depth + 1);
         }
     }
+
+        
 }
