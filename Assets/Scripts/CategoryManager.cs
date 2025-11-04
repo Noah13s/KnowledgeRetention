@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class CategoryManager : MonoBehaviour
 {
@@ -21,6 +22,7 @@ public class CategoryManager : MonoBehaviour
     }
 
     public List<Category> categories = new List<Category>();
+    [SerializeField] private UnityEvent onCategoriesLoaded;
 
     private string jsonFilePath;
 
@@ -42,6 +44,7 @@ public class CategoryManager : MonoBehaviour
     /// </summary>
     public void LoadCategories()
     {
+        if (jsonFilePath == null) { return; }
         if (!File.Exists(jsonFilePath))
         {
             Debug.LogWarning($"categories.json not found in {Application.persistentDataPath}. Creating default file...");
@@ -55,6 +58,7 @@ public class CategoryManager : MonoBehaviour
         {
             categories = wrapper.categories;
             Debug.Log($" Loaded {categories.Count} categories from {jsonFilePath}");
+            onCategoriesLoaded?.Invoke();
         }
         else
         {
@@ -67,10 +71,12 @@ public class CategoryManager : MonoBehaviour
     /// </summary>
     public void SaveCategories()
     {
+        if (jsonFilePath == null) { return; }
         CategoryListWrapper wrapper = new CategoryListWrapper { categories = categories };
         string json = JsonUtility.ToJson(wrapper, true);
         File.WriteAllText(jsonFilePath, json);
         Debug.Log($"Saved categories to {jsonFilePath}");
+       
     }
 
     /// <summary>

@@ -40,6 +40,11 @@ public class QuizMakerNew : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+    }
+
+    public void LoadCategories()
+    {
         foreach (var category in categoryManager.categories)
         {
             var _optionData = new TMP_Dropdown.OptionData();
@@ -47,13 +52,6 @@ public class QuizMakerNew : MonoBehaviour
             categoryTMP.options.Add(_optionData);
         }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
 
     public void ClearAnswers()
     {
