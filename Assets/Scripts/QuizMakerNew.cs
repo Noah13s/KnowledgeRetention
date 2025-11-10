@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static CategoryManager;
 
 public class QuizMakerNew : MonoBehaviour
 {
@@ -29,13 +30,16 @@ public class QuizMakerNew : MonoBehaviour
         public string question;
         public string questionImage;
         public string answerType;// text // image // input //
+        public string category;
         public TextAnswer[] textAnswers;
     }
 
     private void Awake()
     {
         categoryManager.LoadCategories();
+        LoadCategories(); // <-- Add this so it updates dropdown after loading
     }
+
 
     // Start is called before the first frame update
     void Start()
@@ -45,13 +49,37 @@ public class QuizMakerNew : MonoBehaviour
 
     public void LoadCategories()
     {
+        categoryTMP.options.Clear();
+
         foreach (var category in categoryManager.categories)
         {
-            var _optionData = new TMP_Dropdown.OptionData();
-            _optionData.text = category.Name;
-            categoryTMP.options.Add(_optionData);
+            AddCategoryAndSubcategories(category, "");
+        }
+
+        categoryTMP.RefreshShownValue();
+    }
+
+    /// <summary>
+    /// Recursively adds categories and subcategories to the dropdown.
+    /// </summary>
+    private void AddCategoryAndSubcategories(CategoryManager.Category category, string parentPath)
+    {
+        string fullName = string.IsNullOrEmpty(parentPath)
+            ? category.Name
+            : $"{parentPath}/{category.Name}";
+
+        var option = new TMP_Dropdown.OptionData(fullName);
+        categoryTMP.options.Add(option);
+
+        if (category.subCategories != null && category.subCategories.Count > 0)
+        {
+            foreach (var subCat in category.subCategories)
+            {
+                AddCategoryAndSubcategories(subCat, fullName);
+            }
         }
     }
+
 
     public void ClearAnswers()
     {
@@ -77,6 +105,7 @@ public class QuizMakerNew : MonoBehaviour
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
         quiz.questionImage = ""; // Set this if you plan to include images later
+        quiz.category = categoryTMP.options[categoryTMP.value].text;
 
         // 2️ Collect answers from instantiated prefabs
         Transform contentTransform = answersList.transform;

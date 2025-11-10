@@ -9,6 +9,7 @@ public class CategoryLibrary : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private ScrollRect categoryScrollRect;
+    [SerializeField] private ScrollRect quizScrollRect;
     [SerializeField] private GameObject categoryPrefab;
     [SerializeField] private TMP_Dropdown sortDropdown;
     [SerializeField] private Button renameButton;
@@ -23,7 +24,8 @@ public class CategoryLibrary : MonoBehaviour
 
     private List<CategoryElement> selectedCategories = new();
 
-    private string jsonFilePath;
+    private string categoriesJsonFilePath;
+    private string quizzJsonFilePath;
     private CategoryManager.CategoryListWrapper rootData = new();
     private List<CategoryManager.Category> currentCategoryList; // what we’re displaying now
     private Stack<List<CategoryManager.Category>> navigationStack = new(); // for back navigation
@@ -31,7 +33,8 @@ public class CategoryLibrary : MonoBehaviour
 
     private void Awake()
     {
-        jsonFilePath = Path.Combine(Application.persistentDataPath, "categories.json");
+        categoriesJsonFilePath = Path.Combine(Application.persistentDataPath, "categories.json");
+        quizzJsonFilePath = Path.Combine(Application.persistentDataPath, "");
     }
 
     private void Start()
@@ -53,7 +56,7 @@ public class CategoryLibrary : MonoBehaviour
 
     private void LoadCategories()
     {
-        if (!File.Exists(jsonFilePath))
+        if (!File.Exists(categoriesJsonFilePath))
         {
             var defaultCategory = new CategoryManager.Category
             {
@@ -68,15 +71,70 @@ public class CategoryLibrary : MonoBehaviour
         }
         else
         {
-            string json = File.ReadAllText(jsonFilePath);
+            string json = File.ReadAllText(categoriesJsonFilePath);
             rootData = JsonUtility.FromJson<CategoryManager.CategoryListWrapper>(json);
         }
+    }
+
+
+    private void LoadQuizzes()
+    {
+        // Clear previous UI items
+        foreach (Transform child in quizScrollRect.content)
+            Destroy(child.gameObject);
+
+        string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
+        if (!Directory.Exists(quizFolderPath))
+        {
+            Debug.Log("No quizzes folder found.");
+            return;
+        }
+
+        // Determine current category path (like "Root/Science/Physics")
+        string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
+        // Skip "Root" because in your EnterCategory() you start with "Root"
+
+        string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
+
+        List<QuizMakerNew.Quiz> quizzesInCategory = new();
+
+        foreach (string file in quizFiles)
+        {
+            try
+            {
+                string json = File.ReadAllText(file);
+                QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
+
+                if (quiz != null && quiz.category == currentCategoryPath)
+                {
+                    quizzesInCategory.Add(quiz);
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Failed to load quiz file {file}: {e.Message}");
+            }
+        }
+
+        // Display quizzes in quizScrollRect
+        foreach (QuizMakerNew.Quiz quiz in quizzesInCategory)
+        {
+            GameObject quizItem = new("QuizItem", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(Button));
+            quizItem.transform.SetParent(quizScrollRect.content, false);
+
+            TextMeshProUGUI text = quizItem.GetComponent<TextMeshProUGUI>();
+            text.text = quiz.question;
+            text.fontSize = 20;
+            text.enableWordWrapping = true;
+        }
+
+        Debug.Log($"Loaded {quizzesInCategory.Count} quizzes for category: {currentCategoryPath}");
     }
 
     private void SaveCategories()
     {
         string json = JsonUtility.ToJson(rootData, true);
-        File.WriteAllText(jsonFilePath, json);
+        File.WriteAllText(categoriesJsonFilePath, json);
     }
 
     // ---------------- NAVIGATION ----------------
@@ -89,7 +147,9 @@ public class CategoryLibrary : MonoBehaviour
 
         RefreshUI();
         UpdatePathLabel();
+        LoadQuizzes(); // ✅ show quizzes for this category
     }
+
 
     public void GoBack()
     {
@@ -103,6 +163,7 @@ public class CategoryLibrary : MonoBehaviour
         RefreshUI();
         UpdatePathLabel();
         HandleToolbarButtons();
+        LoadQuizzes();
     }
 
     private void UpdatePathLabel()
