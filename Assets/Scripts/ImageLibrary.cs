@@ -369,7 +369,7 @@ public class ImageLibrary : MonoBehaviour
         var imageElement = SelectedElements[0];
 
         onSelectCallback?.Invoke(imageElement.imagePath);
-
+        mode = Mode.Edit;
     }
 
     public void RenameImage(TMP_InputField newName)

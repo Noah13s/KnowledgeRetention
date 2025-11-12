@@ -153,7 +153,7 @@ public class CategoryLibrary : MonoBehaviour
 
         RefreshUI();
         UpdatePathLabel();
-        LoadQuizzes(); // ✅ show quizzes for this category
+        LoadQuizzes(); //  show quizzes for this category
     }
 
 
@@ -301,7 +301,7 @@ public class CategoryLibrary : MonoBehaviour
             return;
         }
 
-        // ✅ Find the QuizMaker object in the scene
+        //  Find the QuizMaker object in the scene
         if (quizMaker == null)
         {
             Debug.LogError("No QuizMaker object found in the scene!");
@@ -310,7 +310,7 @@ public class CategoryLibrary : MonoBehaviour
 
         quizMaker.gameObject.SetActive(true);
 
-        // ✅ Pass *all* quizzes to the QuizMaker
+        //  Pass *all* quizzes to the QuizMaker
         List<string> quizJsonList = new List<string>();
         foreach (var (_, filePath) in quizzesInCategory)
         {
@@ -321,7 +321,7 @@ public class CategoryLibrary : MonoBehaviour
         // Assuming your QuizMaker has a new method for handling multiple quizzes
         quizMaker.SetMultipleJsonStrings(quizJsonList);
 
-        Debug.Log($"✅ Started {quizzesInCategory.Count} quizzes in category '{currentCategoryPath}'.");
+        Debug.Log($" Started {quizzesInCategory.Count} quizzes in category '{currentCategoryPath}'.");
     }
 
 
@@ -361,28 +361,26 @@ public class CategoryLibrary : MonoBehaviour
                 return;
             }
 
-            // ✅ Convert full path to relative path within persistent data
+            //  Convert full path to relative path within persistent data
             string persistentPath = Application.persistentDataPath;
             string relativePath = fullPath.Replace(persistentPath + Path.DirectorySeparatorChar, "");
 
-            // ✅ Store only relative path
+            //  Store only relative path
             categoryElement.CategoryData.ImageFile = relativePath;
 
             Debug.Log($"Stored relative image path: {relativePath}");
 
-            // ✅ Close the image library UI
+            //  Close the image library UI
             imageLibrary.gameObject.SetActive(false);
             setImageButton.interactable = true;
 
-            // ✅ Save and refresh
+            //  Save and refresh
             SaveCategories();
             RefreshUI();
+            selectedCategories.Clear();
+            HandleToolbarButtons();
         };
     }
-
-
-
-
 
     public void AddCategory(TMP_InputField nameField)
     {
