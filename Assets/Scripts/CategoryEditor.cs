@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -8,10 +9,9 @@ using UnityEngine.UI;
 public class CategoryLibrary : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private ScrollRect categoryScrollRect;
-    [SerializeField] private ScrollRect quizScrollRect;
-    [SerializeField] private GameObject categoryPrefab;
+    [SerializeField] private TMP_InputField categoryName;
     [SerializeField] private TMP_Dropdown sortDropdown;
+    [SerializeField] private Button addCategory;
     [SerializeField] private Button renameButton;
     [SerializeField] private Button deleteButton;
     [SerializeField] private Button setImageButton;
@@ -21,8 +21,11 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private TMP_Text currentPathLabel;
     [SerializeField] private Button startQuizz;
     [Header("Setup")]
+    [SerializeField] private GameObject categoryPrefab;
+    [SerializeField] private ScrollRect quizScrollRect;
+    [SerializeField] private ScrollRect categoryScrollRect;
     [SerializeField] private ImageLibrary imageLibrary;
-    [SerializeField] private QuizMaker quizMaker;
+    [SerializeField] private QuizPlayer quizMaker;
 
     private List<CategoryElement> selectedCategories = new();
 
@@ -44,6 +47,7 @@ public class CategoryLibrary : MonoBehaviour
         SetupSortDropdown();
         LoadCategories();
         EnterCategory(rootData.categories, "Root");
+        categoryName.onValueChanged.AddListener(HandleToolbarButtons);
     }
 
 
@@ -212,6 +216,11 @@ public class CategoryLibrary : MonoBehaviour
     }
 
 
+    private void HandleToolbarButtons(string value)
+    {
+        HandleToolbarButtons();
+    }
+
     private void HandleToolbarButtons()
     {
         bool hasSelection = selectedCategories.Count > 0;
@@ -223,6 +232,7 @@ public class CategoryLibrary : MonoBehaviour
         setImageButton.interactable = singleSelection;
 
         startQuizz.interactable = quizScrollRect.content.transform.childCount > 0;
+        addCategory.interactable = !String.IsNullOrEmpty(categoryName.text);
     }
 
 
@@ -291,24 +301,27 @@ public class CategoryLibrary : MonoBehaviour
             return;
         }
 
-        // ✅ Start the first quiz (or later you can let user pick)
-        var (selectedQuiz, quizFilePath) = quizzesInCategory[0];
-        string quizJson = File.ReadAllText(quizFilePath);
-
         // ✅ Find the QuizMaker object in the scene
         if (quizMaker == null)
         {
             Debug.LogError("No QuizMaker object found in the scene!");
             return;
         }
+
         quizMaker.gameObject.SetActive(true);
-        // ✅ Pass JSON to QuizMaker and start quiz
-        quizMaker.SetJsonString(quizJson);
 
-        // Hide the category library UI if desired
-        gameObject.SetActive(false);
+        // ✅ Pass *all* quizzes to the QuizMaker
+        List<string> quizJsonList = new List<string>();
+        foreach (var (_, filePath) in quizzesInCategory)
+        {
+            string quizJson = File.ReadAllText(filePath);
+            quizJsonList.Add(quizJson);
+        }
 
-        Debug.Log($"✅ Started quiz: {selectedQuiz.quizName} (Category: {currentCategoryPath})");
+        // Assuming your QuizMaker has a new method for handling multiple quizzes
+        quizMaker.SetMultipleJsonStrings(quizJsonList);
+
+        Debug.Log($"✅ Started {quizzesInCategory.Count} quizzes in category '{currentCategoryPath}'.");
     }
 
 
