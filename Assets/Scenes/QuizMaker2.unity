@@ -6587,7 +6587,8 @@ MonoBehaviour:
   quizScrollRect: {fileID: 1771316207}
   categoryScrollRect: {fileID: 2112200001}
   imageLibrary: {fileID: 1935774266}
-  quizMaker: {fileID: 840388142}
+  quizPlayer: {fileID: 840388142}
+  quizMaker: {fileID: 1119241776}
 --- !u!1 &754735486
 GameObject:
   m_ObjectHideFlags: 0
@@ -7546,6 +7547,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31c45a216ddecaf4eb2199a06e020c10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentQuizNb: {fileID: 1537146003}
+  totalQuizNb: {fileID: 729691322}
   questionText: {fileID: 771483866}
   answersParent: {fileID: 1718885994}
   answerButtonPrefab: {fileID: 419848166603276087, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
@@ -15032,8 +15035,8 @@ RectTransform:
   - {fileID: 1119241772}
   - {fileID: 754717385}
   - {fileID: 1935774263}
-  - {fileID: 109502955}
   - {fileID: 840388139}
+  - {fileID: 109502955}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

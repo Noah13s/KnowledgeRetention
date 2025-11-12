@@ -136,6 +136,50 @@ public class QuizMakerNew : MonoBehaviour
         }
     }
 
+    public void OpenQuiz(Quiz _quiz)
+    {
+        // Set quiz name
+        quizName.text = _quiz.quizName;
+
+        // Set question type dropdown
+        int questionTypeIndex = questionType.options.FindIndex(opt => opt.text == _quiz.questionType);
+        questionType.value = questionTypeIndex >= 0 ? questionTypeIndex : 0;
+
+        // Set question text
+        questionInput.text = _quiz.question;
+
+        // Set answer type dropdown
+        int answerTypeIndex = answerType.options.FindIndex(opt => opt.text == _quiz.answerType);
+        answerType.value = answerTypeIndex >= 0 ? answerTypeIndex : 0;
+
+        // Set category dropdown
+        int categoryIndex = categoryTMP.options.FindIndex(opt => opt.text == _quiz.category);
+        categoryTMP.value = categoryIndex >= 0 ? categoryIndex : 0;
+
+        // Clear any existing answers
+        ClearAnswers();
+
+        // Recreate answers from quiz data
+        if (_quiz.textAnswers != null && _quiz.textAnswers.Length > 0)
+        {
+            foreach (var answerData in _quiz.textAnswers)
+            {
+                GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
+                Answer answerComponent = newAnswer.GetComponent<Answer>();
+                if (answerComponent != null)
+                {
+                    answerComponent.answerText.text = answerData.answer;
+                    answerComponent.correctAnswer.isOn = answerData.correctAnswer;
+                    answerComponent.aiAnswer.isOn = answerData.AIGen;
+                }
+            }
+        }
+
+        // Re-enable add answer button if below limit
+        addAnswer.interactable = answersList.transform.childCount < 4;
+    }
+
+
     public void CreateQuiz()
     {
         // 1️ Create a new Quiz object

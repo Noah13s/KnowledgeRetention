@@ -7,12 +7,13 @@ using System.Linq;
 
 public class QuizPlayer : MonoBehaviour
 {
-
     [Header("UI References")]
-    public TMP_Text questionText;
-    public Transform answersParent;
-    public GameObject answerButtonPrefab;
-    public Button nextButton;
+    [SerializeField] private TextMeshProUGUI currentQuizNb;
+    [SerializeField] private TextMeshProUGUI totalQuizNb;
+    [SerializeField] private TMP_Text questionText;
+    [SerializeField] private Transform answersParent;
+    [SerializeField] private GameObject answerButtonPrefab;
+    [SerializeField] private Button nextButton;
 
     private List<Quiz> loadedQuizzes = new();
     private int currentQuizIndex = 0;
@@ -20,12 +21,15 @@ public class QuizPlayer : MonoBehaviour
     private bool answered = false;
     private bool quizCompleted = false;
 
+    // Store buttons for easier color control later
+    private List<(Button button, bool isCorrect)> currentButtons = new();
+
     // =========================================
-    // PUBLIC ENTRY POINT
+    // Public ENTRY POINT
     // =========================================
     public void SetMultipleJsonStrings(List<string> jsonList)
     {
-        ResetQuizPlayer(); //  Reset first before loading new data
+        ResetQuizPlayer(); // Reset first before loading new data
 
         foreach (var json in jsonList)
         {
@@ -36,7 +40,7 @@ public class QuizPlayer : MonoBehaviour
 
         if (loadedQuizzes.Count == 0)
         {
-            Debug.LogWarning(" No valid quizzes loaded.");
+            Debug.LogWarning("No valid quizzes loaded.");
             return;
         }
 
@@ -57,11 +61,21 @@ public class QuizPlayer : MonoBehaviour
         }
 
         currentQuiz = loadedQuizzes[currentQuizIndex];
+        UpdateQuizCounterUI(currentQuizIndex + 1, loadedQuizzes.Count);
         currentQuizIndex++;
 
         answered = false;
         ShowQuestion();
     }
+
+    private void UpdateQuizCounterUI(int current, int total)
+    {
+        if (currentQuizNb != null)
+            currentQuizNb.text = current.ToString();
+        if (totalQuizNb != null)
+            totalQuizNb.text = total.ToString();
+    }
+
 
     private void ShowQuestion()
     {
@@ -75,12 +89,13 @@ public class QuizPlayer : MonoBehaviour
         foreach (Transform child in answersParent)
             Destroy(child.gameObject);
 
+        currentButtons.Clear();
         questionText.text = currentQuiz.question;
         nextButton.gameObject.SetActive(false);
 
         // Randomize the answer order
         List<TextAnswer> randomizedAnswers = currentQuiz.textAnswers
-            .OrderBy(a => Random.value) // Shuffle using Unity’s Random
+            .OrderBy(a => Random.value) // Shuffle
             .ToList();
 
         foreach (var ans in randomizedAnswers)
@@ -94,6 +109,8 @@ public class QuizPlayer : MonoBehaviour
 
             btn.onClick.RemoveAllListeners();
             btn.onClick.AddListener(() => OnAnswerSelected(btn, isCorrect));
+
+            currentButtons.Add((btn, isCorrect));
         }
     }
 
@@ -102,38 +119,57 @@ public class QuizPlayer : MonoBehaviour
         if (answered) return;
         answered = true;
 
-        // Disable all answer buttons
         foreach (Transform child in answersParent)
         {
             Button b = child.GetComponent<Button>();
             b.interactable = false;
         }
 
-        // Feedback
-        TMP_Text buttonText = clickedButton.GetComponentInChildren<TMP_Text>();
         if (isCorrect)
         {
-            buttonText.text += " ";
-            Debug.Log(" Correct!");
+            SetButtonColor(clickedButton, Color.green);
+            Debug.Log("Correct");
         }
         else
         {
-            buttonText.text += " ";
-            Debug.Log(" Wrong!");
+            SetButtonColor(clickedButton, Color.red);
+            Debug.Log("Wrong");
+
+            foreach (Transform child in answersParent)
+            {
+                Button b = child.GetComponent<Button>();
+                if (b == clickedButton) continue;
+
+                TMP_Text t = b.GetComponentInChildren<TMP_Text>();
+                if (currentQuiz.textAnswers.Any(a => a.answer == t.text && a.correctAnswer))
+                {
+                    SetButtonColor(b, Color.green);
+                    break;
+                }
+            }
         }
 
-        // Wait for "Next"
         nextButton.gameObject.SetActive(true);
     }
 
+    private void SetButtonColor(Button button, Color color)
+    {
+        Image img = button.GetComponent<Image>();
+        if (img != null) img.color = color;
+
+        TMP_Text txt = button.GetComponentInChildren<TMP_Text>();
+        if (txt != null) txt.color = Color.white;
+    }
+
+
     // =========================================
-    // PUBLIC "Next" BUTTON
+    // Public "Next" BUTTON
     // =========================================
     public void NextQuestion()
     {
         if (quizCompleted)
         {
-            Debug.Log(" All quizzes already finished.");
+            Debug.Log("All quizzes already finished.");
             return;
         }
 
@@ -146,26 +182,22 @@ public class QuizPlayer : MonoBehaviour
     // =========================================
     private void OnAllQuizzesCompleted()
     {
-        Debug.Log(" All category quizzes finished!");
+        Debug.Log("All category quizzes finished!");
         nextButton.gameObject.SetActive(false);
 
-        //  Reset the player so it's ready for the next start
         ResetQuizPlayer();
-
-        // Optionally hide the player UI
         gameObject.SetActive(false);
     }
 
     private void ResetQuizPlayer()
     {
-        // Clear quiz data
         loadedQuizzes.Clear();
         currentQuiz = null;
         currentQuizIndex = 0;
         answered = false;
         quizCompleted = false;
+        currentButtons.Clear();
 
-        // Clear UI
         if (questionText != null) questionText.text = "";
         if (answersParent != null)
         {
@@ -175,6 +207,10 @@ public class QuizPlayer : MonoBehaviour
         if (nextButton != null)
             nextButton.gameObject.SetActive(false);
 
-        Debug.Log(" QuizPlayer reset and ready for new quizzes.");
+        if (currentQuizNb != null) currentQuizNb.text = "0";
+        if (totalQuizNb != null) totalQuizNb.text = "0";
+
+        Debug.Log("QuizPlayer reset and ready for new quizzes.");
     }
+
 }

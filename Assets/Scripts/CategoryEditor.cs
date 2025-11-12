@@ -25,7 +25,8 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private ScrollRect quizScrollRect;
     [SerializeField] private ScrollRect categoryScrollRect;
     [SerializeField] private ImageLibrary imageLibrary;
-    [SerializeField] private QuizPlayer quizMaker;
+    [SerializeField] private QuizPlayer quizPlayer;
+    [SerializeField] private QuizMakerNew quizMaker;
 
     private List<CategoryElement> selectedCategories = new();
 
@@ -132,6 +133,9 @@ public class CategoryLibrary : MonoBehaviour
             text.text = quiz.quizName;
             text.fontSize = 20;
             text.enableWordWrapping = true;
+
+            var quizBtn = quizItem.GetComponent<Button>();
+            quizBtn.onClick.AddListener(() => { quizMaker.OpenQuiz(quiz); quizMaker.gameObject.SetActive(true); this.gameObject.SetActive(false); });
         }
 
         Debug.Log($"Loaded {quizzesInCategory.Count} quizzes for category: {currentCategoryPath}");
@@ -302,13 +306,13 @@ public class CategoryLibrary : MonoBehaviour
         }
 
         //  Find the QuizMaker object in the scene
-        if (quizMaker == null)
+        if (quizPlayer == null)
         {
             Debug.LogError("No QuizMaker object found in the scene!");
             return;
         }
 
-        quizMaker.gameObject.SetActive(true);
+        quizPlayer.gameObject.SetActive(true);
 
         //  Pass *all* quizzes to the QuizMaker
         List<string> quizJsonList = new List<string>();
@@ -319,7 +323,7 @@ public class CategoryLibrary : MonoBehaviour
         }
 
         // Assuming your QuizMaker has a new method for handling multiple quizzes
-        quizMaker.SetMultipleJsonStrings(quizJsonList);
+        quizPlayer.SetMultipleJsonStrings(quizJsonList);
 
         Debug.Log($" Started {quizzesInCategory.Count} quizzes in category '{currentCategoryPath}'.");
     }
