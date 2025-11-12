@@ -19,8 +19,10 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private Button openButton;
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text currentPathLabel;
+    [SerializeField] private Button startQuizz;
     [Header("Setup")]
-    [SerializeField] ImageLibrary imageLibrary;
+    [SerializeField] private ImageLibrary imageLibrary;
+    [SerializeField] private QuizMaker quizMaker;
 
     private List<CategoryElement> selectedCategories = new();
 
@@ -219,6 +221,8 @@ public class CategoryLibrary : MonoBehaviour
         deleteButton.interactable = hasSelection;
         openButton.interactable = singleSelection; // Always openable when one is selected
         setImageButton.interactable = singleSelection;
+
+        startQuizz.interactable = quizScrollRect.content.transform.childCount > 0;
     }
 
 
@@ -244,6 +248,69 @@ public class CategoryLibrary : MonoBehaviour
         // Refresh toolbar buttons (disable everything)
         HandleToolbarButtons();
     }
+
+    public void StartQuizz()
+    {
+        // Locate quiz folder
+        string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
+        if (!Directory.Exists(quizFolderPath))
+        {
+            Debug.LogWarning("No quizzes folder found — cannot start quiz.");
+            return;
+        }
+
+        // Build current category path (excluding "Root")
+        string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
+
+        // Find all JSON files in the quiz folder
+        string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
+
+        List<(QuizMakerNew.Quiz quiz, string filePath)> quizzesInCategory = new();
+
+        foreach (string file in quizFiles)
+        {
+            try
+            {
+                string json = File.ReadAllText(file);
+                QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
+
+                if (quiz != null && quiz.category == currentCategoryPath)
+                {
+                    quizzesInCategory.Add((quiz, file));
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Failed to load quiz file {file}: {e.Message}");
+            }
+        }
+
+        if (quizzesInCategory.Count == 0)
+        {
+            Debug.LogWarning($"No quizzes found for category '{currentCategoryPath}'.");
+            return;
+        }
+
+        // ✅ Start the first quiz (or later you can let user pick)
+        var (selectedQuiz, quizFilePath) = quizzesInCategory[0];
+        string quizJson = File.ReadAllText(quizFilePath);
+
+        // ✅ Find the QuizMaker object in the scene
+        if (quizMaker == null)
+        {
+            Debug.LogError("No QuizMaker object found in the scene!");
+            return;
+        }
+        quizMaker.gameObject.SetActive(true);
+        // ✅ Pass JSON to QuizMaker and start quiz
+        quizMaker.SetJsonString(quizJson);
+
+        // Hide the category library UI if desired
+        gameObject.SetActive(false);
+
+        Debug.Log($"✅ Started quiz: {selectedQuiz.quizName} (Category: {currentCategoryPath})");
+    }
+
 
     public void SetImage()
     {
