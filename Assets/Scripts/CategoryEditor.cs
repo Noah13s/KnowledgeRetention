@@ -123,7 +123,7 @@ public class CategoryLibrary : MonoBehaviour
             quizItem.transform.SetParent(quizScrollRect.content, false);
 
             TextMeshProUGUI text = quizItem.GetComponent<TextMeshProUGUI>();
-            text.text = quiz.question;
+            text.text = quiz.quizName;
             text.fontSize = 20;
             text.enableWordWrapping = true;
         }

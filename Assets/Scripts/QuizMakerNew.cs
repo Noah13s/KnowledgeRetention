@@ -1,11 +1,16 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static CategoryManager;
 
 public class QuizMakerNew : MonoBehaviour
 {
+    [Header("Refs")]
+    [SerializeField] private TMP_InputField quizName;
+    [SerializeField] private Button createButton;
+    [Header("Setup")]
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
     [SerializeField] private TMP_Dropdown answerType;
@@ -26,6 +31,7 @@ public class QuizMakerNew : MonoBehaviour
     [System.Serializable]
     public class Quiz
     {
+        public string quizName;
         public string questionType;// text // text + image //
         public string question;
         public string questionImage;
@@ -40,11 +46,17 @@ public class QuizMakerNew : MonoBehaviour
         LoadCategories(); // <-- Add this so it updates dropdown after loading
     }
 
-
-    // Start is called before the first frame update
-    void Start()
+    private void Update()
     {
-
+        // Creation requirements check
+        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text))
+        {
+            createButton.interactable = false;
+        }
+        else
+        {
+            createButton.interactable = true;
+        }
     }
 
     public void LoadCategories()
@@ -101,6 +113,7 @@ public class QuizMakerNew : MonoBehaviour
     {
         // 1️ Create a new Quiz object
         Quiz quiz = new Quiz();
+        quiz.quizName = quizName.text;
         quiz.questionType = questionType.options[questionType.value].text;
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
@@ -137,7 +150,7 @@ public class QuizMakerNew : MonoBehaviour
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
-        string fileName = "quiz_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json";
+        string fileName = "quiz_" + quiz.quizName + ".json";
         string filePath = Path.Combine(folderPath, fileName);
 
         // 5️ Write to file
