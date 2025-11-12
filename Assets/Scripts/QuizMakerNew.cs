@@ -9,6 +9,7 @@ public class QuizMakerNew : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private TMP_InputField quizName;
+    [SerializeField] private Button addAnswer;
     [SerializeField] private Button createButton;
     [Header("Setup")]
     [SerializeField] private TMP_Dropdown questionType;
@@ -102,11 +103,37 @@ public class QuizMakerNew : MonoBehaviour
         {
             Destroy(contentTransform.GetChild(i).gameObject);
         }
+        addAnswer.interactable = true;
     }
 
     public void AddAnswer()
     {
-        Instantiate(answerPrefab, answersList.transform);
+        // Limit only applies to text-based answers (can be changed)
+        int maxAnswers = 4;
+
+        // Allow adding answers only if the selected answer type is "Text"
+        if (answerType.options[answerType.value].text.Equals("Text select", StringComparison.OrdinalIgnoreCase))
+        {
+            int currentCount = answersList.transform.childCount;
+
+            if (currentCount < maxAnswers)
+            {
+                // Instantiate new answer prefab
+                GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
+
+                // Optionally reset the answer prefab’s input fields/toggles
+                Answer answerComponent = newAnswer.GetComponent<Answer>();
+                if (answerComponent != null)
+                {
+                    answerComponent.answerText.text = "";
+                    answerComponent.correctAnswer.isOn = false;
+                    answerComponent.aiAnswer.isOn = false;
+                }
+
+                // Disable the button if we reached the max allowed answers
+                addAnswer.interactable = (answersList.transform.childCount < maxAnswers);
+            }
+        }
     }
 
     public void CreateQuiz()
