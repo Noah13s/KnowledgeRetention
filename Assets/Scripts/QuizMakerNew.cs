@@ -12,6 +12,7 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private TMP_InputField quizName;
     [SerializeField] private Button addAnswer;
     [SerializeField] private Button createButton;
+    [SerializeField] private Button deleteButton;
     [Header("Setup")]
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
@@ -58,6 +59,14 @@ public class QuizMakerNew : MonoBehaviour
         else
         {
             createButton.interactable = true;
+        }
+        if (String.IsNullOrEmpty(quizName.text))
+        {
+            deleteButton.interactable = false;
+        }
+        else
+        {
+            deleteButton.interactable = true;
         }
     }
 
@@ -231,6 +240,43 @@ public class QuizMakerNew : MonoBehaviour
         addAnswer.interactable = answersList.transform.childCount < 4;
         AnswersValidityCheck();
     }
+
+    public void DeleteQuiz()
+    {
+        // Ensure quiz name is provided
+        if (string.IsNullOrEmpty(quizName.text))
+        {
+            Debug.LogWarning("Cannot delete quiz: Quiz name is empty.");
+            return;
+        }
+
+        // Build file path
+        string folderPath = Path.Combine(Application.persistentDataPath, "quizzes");
+        string fileName = "quiz_" + quizName.text + ".json";
+        string filePath = Path.Combine(folderPath, fileName);
+
+        // Check if file exists
+        if (File.Exists(filePath))
+        {
+            try
+            {
+                File.Delete(filePath);
+                Debug.Log($"Quiz deleted: {filePath}");
+
+                // Reset UI after deletion
+                ResetQuiz();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to delete quiz: {e.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Quiz file not found: {filePath}");
+        }
+    }
+
 
 
     public void CreateQuiz()

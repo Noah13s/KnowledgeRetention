@@ -217,6 +217,7 @@ public class CategoryLibrary : MonoBehaviour
             selectedCategories.Remove(elem);
 
         HandleToolbarButtons();
+        Handheld.Vibrate();
     }
 
 
@@ -230,13 +231,14 @@ public class CategoryLibrary : MonoBehaviour
         bool hasSelection = selectedCategories.Count > 0;
         bool singleSelection = selectedCategories.Count == 1;
 
-        renameButton.interactable = singleSelection;
+        renameButton.interactable = singleSelection && !String.IsNullOrEmpty(categoryName.text);
         deleteButton.interactable = hasSelection;
         openButton.interactable = singleSelection; // Always openable when one is selected
         setImageButton.interactable = singleSelection;
 
         startQuizz.interactable = quizScrollRect.content.transform.childCount > 0;
         addCategory.interactable = !String.IsNullOrEmpty(categoryName.text);
+
     }
 
 
