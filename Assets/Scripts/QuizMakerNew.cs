@@ -29,9 +29,10 @@ public class QuizMakerNew : MonoBehaviour
     private string _questionImagePath;
 
     [System.Serializable]
-    public class TextAnswer
+    public class Answer
     {
-        public string answer;
+        public string textAnswer;
+        public string imageAnswerFile;
         public bool correctAnswer;
         public bool AIGen;
     }
@@ -44,7 +45,7 @@ public class QuizMakerNew : MonoBehaviour
         public string questionImage;
         public string answerType;// text // image // input //
         public string category;
-        public TextAnswer[] textAnswers;
+        public Answer[] answers;
     }
 
     private void Awake()
@@ -52,10 +53,11 @@ public class QuizMakerNew : MonoBehaviour
         categoryManager.LoadCategories();
         LoadCategories(); // <-- Add this so it updates dropdown after loading
         questionType.onValueChanged.AddListener((int value) => HandleQuestionType(value));
+        answerType.onValueChanged.AddListener((int value) => HandleAnswerType(value));
     }
-
     private void HandleQuestionType(int value)
     {
+
         switch (value)
         {
             case 0:
@@ -67,10 +69,49 @@ public class QuizMakerNew : MonoBehaviour
         }
     }
 
+    private void HandleAnswerType(int value)
+    {
+        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
+
+        switch (value)
+        {
+            case 0:
+                foreach (var answer in answers)
+                {
+                    answer.HandleType(AnswerPrefab.AnswerType.Text, imageLibrary);
+                }
+                break;
+            case 1:
+
+                break;
+            case 2:
+                foreach (var answer in answers)
+                {
+                    answer.HandleType(AnswerPrefab.AnswerType.Image, imageLibrary);
+                }
+                break;
+        }
+    }
+
+
+
     private void Update()
     {
+        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
+
+        // Find the active (toggled-on) answer
+        AnswerPrefab activeAnswer = null;
+        foreach (var answer in answers)
+        {
+            if (answer.correctAnswer.isOn)
+            {
+                activeAnswer = answer;
+                break;
+            }
+        }
+
         // Creation requirements check
-        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text))
+        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text) || activeAnswer == null)
         {
             createButton.interactable = false;
         }
@@ -140,38 +181,37 @@ public class QuizMakerNew : MonoBehaviour
         // Limit only applies to text-based answers (can be changed)
         int maxAnswers = 4;
 
-        // Allow adding answers only if the selected answer type is "Text"
-        if (answerType.options[answerType.value].text.Equals("Text select", StringComparison.OrdinalIgnoreCase))
+
+        int currentCount = answersList.transform.childCount;
+
+        if (currentCount < maxAnswers)
         {
-            int currentCount = answersList.transform.childCount;
+            // Instantiate new answer prefab
+            GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
 
-            if (currentCount < maxAnswers)
-            {
-                // Instantiate new answer prefab
-                GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
-
-                // Optionally reset the answer prefab’s input fields/toggles
-                Answer answerComponent = newAnswer.GetComponent<Answer>();
-                if (answerComponent != null)
-                {
-                    answerComponent.answerText.text = "";
-                    answerComponent.correctAnswer.isOn = false;
-                    answerComponent.aiAnswer.isOn = false;
-                }
-
-                // Disable the button if we reached the max allowed answers
-                addAnswer.interactable = (answersList.transform.childCount < maxAnswers);
-                AnswersValidityCheck();
+            // Optionally reset the answer prefab’s input fields/toggles
+            AnswerPrefab answerComponent = newAnswer.GetComponent<AnswerPrefab>();
+            if (answerComponent != null)
+            {               
+                answerComponent.answerText.text = "";
+                answerComponent.correctAnswer.isOn = false;
+                answerComponent.aiAnswer.isOn = false;
             }
+
+            // Disable the button if we reached the max allowed answers
+            addAnswer.interactable = (answersList.transform.childCount < maxAnswers);
+            HandleAnswerType(answerType.value);
+            AnswersValidityCheck();
+            
         }
     }
 
     private void AnswersValidityCheck()
     {
-        var answers = answersList.GetComponentsInChildren<Answer>();
+        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
 
         // Find the active (toggled-on) answer
-        Answer activeAnswer = null;
+        AnswerPrefab activeAnswer = null;
         foreach (var answer in answers)
         {
             if (answer.correctAnswer.isOn)
@@ -225,6 +265,8 @@ public class QuizMakerNew : MonoBehaviour
         int questionTypeIndex = questionType.options.FindIndex(opt => opt.text == _quiz.questionType);
         questionType.value = questionTypeIndex >= 0 ? questionTypeIndex : 0;
 
+        ImageSetup(_quiz.questionImage);
+
         // Set question text
         questionInput.text = _quiz.question;
 
@@ -240,15 +282,15 @@ public class QuizMakerNew : MonoBehaviour
         ClearAnswers();
 
         // Recreate answers from quiz data
-        if (_quiz.textAnswers != null && _quiz.textAnswers.Length > 0)
+        if (_quiz.answers != null && _quiz.answers.Length > 0)
         {
-            foreach (var answerData in _quiz.textAnswers)
+            foreach (var answerData in _quiz.answers)
             {
                 GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
-                Answer answerComponent = newAnswer.GetComponent<Answer>();
+                AnswerPrefab answerComponent = newAnswer.GetComponent<AnswerPrefab>();
                 if (answerComponent != null)
                 {
-                    answerComponent.answerText.text = answerData.answer;
+                    answerComponent.answerText.text = answerData.textAnswer;
                     answerComponent.correctAnswer.isOn = answerData.correctAnswer;
                     answerComponent.aiAnswer.isOn = answerData.AIGen;
                 }
@@ -364,7 +406,7 @@ public class QuizMakerNew : MonoBehaviour
 
         // 2️ Collect answers from instantiated prefabs
         Transform contentTransform = answersList.transform;
-        quiz.textAnswers = new TextAnswer[contentTransform.childCount];
+        quiz.answers = new Answer[contentTransform.childCount];
 
         for (int i = 0; i < contentTransform.childCount; i++)
         {
@@ -372,16 +414,17 @@ public class QuizMakerNew : MonoBehaviour
 
             TMP_InputField inputField = answerGO.GetComponentInChildren<TMP_InputField>();
             Toggle toggle = answerGO.GetComponentInChildren<Toggle>();
-            Answer answerScript = answerGO.GetComponent<Answer>();
+            AnswerPrefab answerScript = answerGO.GetComponent<AnswerPrefab>();
 
-            TextAnswer answer = new TextAnswer
+            Answer answer = new Answer
             {
-                answer = answerScript.answerText.text,
+                imageAnswerFile = answerScript.imagePath,
+                textAnswer = answerScript.answerText.text,
                 correctAnswer = answerScript.correctAnswer.isOn,
                 AIGen = answerScript.aiAnswer.isOn // You can later add a toggle or flag for this
             };
 
-            quiz.textAnswers[i] = answer;
+            quiz.answers[i] = answer;
         }
 
         // 3️ Convert to JSON

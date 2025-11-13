@@ -107,17 +107,18 @@ public class QuizPlayer : MonoBehaviour
 
         currentButtons.Clear();
         questionText.text = currentQuiz.question;
-        if (currentQuiz.questionImage != null) { 
+        Debug.Log(currentQuiz.questionType);
+        if (currentQuiz.questionType == "Question + Image") { 
             ImageSetup(currentQuiz.questionImage); 
             questionImage.gameObject.SetActive(true); 
-        } else
+        } else if (currentQuiz.questionType == "Question only")
         {
             questionImage.gameObject.SetActive(false);
         }    
         nextButton.gameObject.SetActive(false);
 
         // Randomize the answer order
-        List<TextAnswer> randomizedAnswers = currentQuiz.textAnswers
+        List<Answer> randomizedAnswers = currentQuiz.answers
             .OrderBy(a => Random.value) // Shuffle
             .ToList();
 
@@ -125,7 +126,18 @@ public class QuizPlayer : MonoBehaviour
         {
             GameObject btnObj = Instantiate(answerButtonPrefab, answersParent);
             TMP_Text btnText = btnObj.GetComponentInChildren<TMP_Text>();
-            btnText.text = ans.answer;
+            Image btnImage = btnObj.transform.GetChild(0).GetComponentInChildren<Image>();
+            if (currentQuiz.answerType == "Text select")
+            {
+                btnText.gameObject.SetActive(true);
+                btnImage.gameObject.SetActive(false);
+            }else if (currentQuiz.answerType == "Image select")
+            {
+                btnText.gameObject.SetActive(false);
+                btnImage.gameObject.SetActive(true);
+            }
+            btnText.text = ans.textAnswer;
+
 
             Button btn = btnObj.GetComponent<Button>();
             bool isCorrect = ans.correctAnswer;
@@ -164,7 +176,7 @@ public class QuizPlayer : MonoBehaviour
                 if (b == clickedButton) continue;
 
                 TMP_Text t = b.GetComponentInChildren<TMP_Text>();
-                if (currentQuiz.textAnswers.Any(a => a.answer == t.text && a.correctAnswer))
+                if (currentQuiz.answers.Any(a => a.textAnswer == t.text && a.correctAnswer))
                 {
                     SetButtonColor(b, Color.green);
                     break;

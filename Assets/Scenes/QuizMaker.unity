@@ -2440,24 +2440,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31c45a216ddecaf4eb2199a06e020c10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentQuizNb: {fileID: 0}
+  totalQuizNb: {fileID: 0}
   questionText: {fileID: 1042108709}
-  instructionsText: {fileID: 1256373922}
-  multichoiceContainer: {fileID: 949269045}
-  answerPrefab: {fileID: 419848166603276087, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
-  currentQuestionText: {fileID: 1678593567}
-  totalQuestionsText: {fileID: 551801840}
-  correctColor: {r: 0, g: 1, b: 0, a: 1}
-  incorrectColor: {r: 1, g: 0, b: 0, a: 1}
-  defaultColor: {r: 1, g: 1, b: 1, a: 1}
-  jsonString: "{\r\n  \"QuestionType\": \"QuizQuestion (Multiple Choice)\",\r\n 
-    \"Question\": \"What is the smallest unit of matter?\",\r\n  \"Options\": {\r\n   
-    \"A\": \"Molecule\",\r\n    \"B\": \"Compound\",\r\n    \"C\": \"Element\",\r\n   
-    \"D\": \"Mixture\"\r\n  },\r\n  \"CorrectAnswer\": [\"C\"]\r\n},\n{\r\n  \"QuestionType\":
-    \"QuizQuestion (Multiple Choice)\",\r\n  \"Question\": \"What is the smallest
-    unit of matter?\",\r\n  \"Options\": {\r\n    \"A\": \"Molecule\",\r\n    \"B\":
-    \"Compound\",\r\n    \"C\": \"Element\",\r\n    \"D\": \"Mixture\"\r\n  },\r\n 
-    \"CorrectAnswer\": [\"C\"]\r\n}"
-  questionIndex: 0
+  answersParent: {fileID: 0}
+  answerButtonPrefab: {fileID: 0}
+  nextButton: {fileID: 0}
+  questionImage: {fileID: 0}
 --- !u!4 &731675689
 Transform:
   m_ObjectHideFlags: 0
@@ -4689,29 +4678,10 @@ MonoBehaviour:
   stream: 1
   playerName: user
   AIName: assistant
-  prompt: "You are an expert assessment designer specializing in creating educational
-    questions. You always respond with a single, fully valid JSON object using one
-    of the two QuizQuestion formats described below.\nYou must never include any
-    explanation, markdown formatting (like triple backticks), or commentary. Only
-    output the raw JSON.\nThe QuizQuestion type has two distinct formats that cannot
-    be mixed:\r\nText Input Format:\r\nQuestionType: QuizQuestion (Text Input)\r\nQuestion:
-    [Your question]\r\nOptions: Text Input Required\r\nMultiple Choice Format:\r\nQuestionType:
-    QuizQuestion (Multiple Choice)\r\nQuestion: [Your question]\r\nOptions: [2-4
-    lettered options]\r\n\r\nKey rules:\r\nGenerate questions directly without introductory
-    phrases\r\nNever respond something eslse than the JSON\nMake sure the JSON is
-    well formatted\nNever combine text input and multiple choice\r\nUse consistent
-    format labels\r\nProvide one clear correct answer\r\nMatch question complexity
-    to subject level\r\n\rMake every question unique\nRandomize every response: vary
-    question wording, shuffle option letters and distractors, choose among equivalent
-    phrasings\u2014without ever breaking JSON validity or changing labels.\nIf generating
-    multiple questions make sure to separate each json structure by a comma (,) \n\r\nExample
-    1 for Text Input:\r\n{\r\n  \"QuestionType\": \"QuizQuestion (Text Input)\",\r\n 
-    \"Question\": \"What is the chemical symbol for gold?\",\r\n  \"Options\": \"Text
-    Input Required\",\r\n  \"CorrectAnswer\": [\"Au\", \"Au3+\"]\r\n}\r\nExample
-    2 for Multiple Choice:\r\n{\r\n  \"QuestionType\": \"QuizQuestion (Multiple Choice)\",\r\n 
-    \"Question\": \"What is the chemical symbol for gold?\",\r\n  \"Options\": {\r\n   
-    \"A\": \"Au\",\r\n    \"B\": \"Ag\",\r\n    \"C\": \"Fe\",\r\n    \"D\": \"Cu\"\r\n 
-    },\r\n  \"CorrectAnswer\": [\"A\"]\r\n}\n\n"
+  prompt: You are an expert assessment designer. Act as a program or a robot be as
+    direct as possible and as brief as possible. Do not include unecessary comments
+    about what is asked of you. You just provide an answer. Do not make sentences
+    just respond the answer.
   setNKeepToPrompt: 1
   chat: []
   grammarString: 
@@ -5198,10 +5168,10 @@ MonoBehaviour:
   debug: 0
   parallelPrompts: -1
   dontDestroyOnLoad: 1
-  contextSize: 8192
+  contextSize: 500
   batchSize: 512
-  model: Qwen3-1.7B-Q4_K_M.gguf
-  chatTemplate: qwen3
+  model: dolphin-2.9.2-Phi-3-Medium-IQ2_M.gguf
+  chatTemplate: phi-3
   lora: 
   loraWeights: 
   flashAttention: 0
@@ -5211,9 +5181,9 @@ MonoBehaviour:
   SSLKey: 
   SSLKeyPath: 
   minContextLength: 0
-  maxContextLength: 40960
+  maxContextLength: 4096
   embeddingsOnly: 0
-  embeddingLength: 2048
+  embeddingLength: 5120
 --- !u!4 &1702181069
 Transform:
   m_ObjectHideFlags: 0
