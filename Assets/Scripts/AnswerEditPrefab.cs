@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AnswerPrefab : MonoBehaviour
+public class AnswerEditPrefab : MonoBehaviour
 {
     [System.Serializable]
     public enum AnswerType

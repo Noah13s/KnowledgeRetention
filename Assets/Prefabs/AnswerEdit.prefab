@@ -925,7 +925,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100, y: -63.299995}
+  m_AnchoredPosition: {x: 100, y: -60}
   m_SizeDelta: {x: 180, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1093217379622163477
@@ -1298,7 +1298,7 @@ GameObject:
   - component: {fileID: 8759571855055604655}
   - component: {fileID: 4922475672206388923}
   m_Layer: 5
-  m_Name: TextAnswer
+  m_Name: AnswerEdit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1400,7 +1400,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6417864729066333613}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b1c45bca2d5dc846ab26b54f63c5b4f, type: 3}
+  m_Script: {fileID: 11500000, guid: dc5a7704bb9bd7948ae199311c0334f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   type: 0
@@ -1409,6 +1409,7 @@ MonoBehaviour:
   aiAnswer: {fileID: 1745032618868790800}
   imageAnswer: {fileID: 2850878266343453269}
   imageLibrary: {fileID: 0}
+  imagePath: 
 --- !u!1 &6633006547117786227
 GameObject:
   m_ObjectHideFlags: 0

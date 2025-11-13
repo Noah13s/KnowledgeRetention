@@ -217,7 +217,6 @@ public class CategoryLibrary : MonoBehaviour
             selectedCategories.Remove(elem);
 
         HandleToolbarButtons();
-        Handheld.Vibrate();
     }
 
 

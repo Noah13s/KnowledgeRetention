@@ -12,10 +12,10 @@ public class QuizPlayer : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentQuizNb;
     [SerializeField] private TextMeshProUGUI totalQuizNb;
     [SerializeField] private TMP_Text questionText;
+    [SerializeField] private Image questionImage;
     [SerializeField] private Transform answersParent;
     [SerializeField] private GameObject answerButtonPrefab;
     [SerializeField] private Button nextButton;
-    [SerializeField] private Image questionImage;
 
     private List<Quiz> loadedQuizzes = new();
     private int currentQuizIndex = 0;
@@ -110,10 +110,10 @@ public class QuizPlayer : MonoBehaviour
         Debug.Log(currentQuiz.questionType);
         if (currentQuiz.questionType == "Question + Image") { 
             ImageSetup(currentQuiz.questionImage); 
-            questionImage.gameObject.SetActive(true); 
+            questionImage.transform.parent.gameObject.SetActive(true); 
         } else if (currentQuiz.questionType == "Question only")
         {
-            questionImage.gameObject.SetActive(false);
+            questionImage.transform.parent.gameObject.SetActive(false);
         }    
         nextButton.gameObject.SetActive(false);
 
@@ -125,18 +125,21 @@ public class QuizPlayer : MonoBehaviour
         foreach (var ans in randomizedAnswers)
         {
             GameObject btnObj = Instantiate(answerButtonPrefab, answersParent);
-            TMP_Text btnText = btnObj.GetComponentInChildren<TMP_Text>();
-            Image btnImage = btnObj.transform.GetChild(0).GetComponentInChildren<Image>();
+            AnswerResponsePrefab answerPrefabScript  = btnObj.GetComponent<AnswerResponsePrefab>();
+            TMP_Text btnText = answerPrefabScript.answerText;
+            Image btnImage = answerPrefabScript.answerImage;
             if (currentQuiz.answerType == "Text select")
             {
                 btnText.gameObject.SetActive(true);
                 btnImage.gameObject.SetActive(false);
-            }else if (currentQuiz.answerType == "Image select")
+                btnText.text = ans.textAnswer;
+            }
+            else if (currentQuiz.answerType == "Image select")
             {
                 btnText.gameObject.SetActive(false);
                 btnImage.gameObject.SetActive(true);
+                answerPrefabScript.ImageSetup(ans.imageAnswerFile);
             }
-            btnText.text = ans.textAnswer;
 
 
             Button btn = btnObj.GetComponent<Button>();
@@ -176,7 +179,7 @@ public class QuizPlayer : MonoBehaviour
                 if (b == clickedButton) continue;
 
                 TMP_Text t = b.GetComponentInChildren<TMP_Text>();
-                if (currentQuiz.answers.Any(a => a.textAnswer == t.text && a.correctAnswer))
+                if (currentQuiz.answers.Any(a => a.correctAnswer))
                 {
                     SetButtonColor(b, Color.green);
                     break;
@@ -191,6 +194,9 @@ public class QuizPlayer : MonoBehaviour
     {
         Image img = button.GetComponent<Image>();
         if (img != null) img.color = color;
+
+        AnswerResponsePrefab prefabScript = button.GetComponent<AnswerResponsePrefab>();
+        prefabScript.answerImage.color = color;
 
         TMP_Text txt = button.GetComponentInChildren<TMP_Text>();
         if (txt != null) txt.color = Color.white;

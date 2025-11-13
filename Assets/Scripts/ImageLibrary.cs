@@ -19,6 +19,7 @@ public class ImageLibrary : MonoBehaviour
     [SerializeField] private Button import;
     [SerializeField] private TMP_InputField input;
     [SerializeField] private Button open;
+    [SerializeField] private Button cancel;
     [SerializeField] private Button rename;
     [SerializeField] private Button delete;
     [Header("Setup")]
@@ -270,6 +271,7 @@ public class ImageLibrary : MonoBehaviour
                 import.gameObject.SetActive(true);
                 input.gameObject.SetActive(true);
                 open.gameObject.SetActive(false);
+                cancel.gameObject.SetActive(false);
                 break;
             case Mode.Select:
                 // Ensure toggle group exists for single selection
@@ -280,6 +282,7 @@ public class ImageLibrary : MonoBehaviour
                 import.gameObject.SetActive(false);
                 input.gameObject.SetActive(false);
                 open.gameObject.SetActive(true);
+                cancel.gameObject.SetActive(true);
                 break;
         }
         // clear any previous selection state
@@ -370,6 +373,12 @@ public class ImageLibrary : MonoBehaviour
 
         onSelectCallback?.Invoke(imageElement.imagePath);
         mode = Mode.Edit;
+    }
+
+    public void CancelSelection()
+    {
+        mode = Mode.Edit;
+        onSelectCallback?.Invoke(null);
     }
 
     public void RenameImage(TMP_InputField newName)

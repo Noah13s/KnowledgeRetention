@@ -27,6 +27,7 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private ImageLibrary imageLibrary;
 
     private string _questionImagePath;
+    private bool _correctAnswerSelected = false;
 
     [System.Serializable]
     public class Answer
@@ -71,14 +72,14 @@ public class QuizMakerNew : MonoBehaviour
 
     private void HandleAnswerType(int value)
     {
-        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
+        var answers = answersList.GetComponentsInChildren<AnswerEditPrefab>();
 
         switch (value)
         {
             case 0:
                 foreach (var answer in answers)
                 {
-                    answer.HandleType(AnswerPrefab.AnswerType.Text, imageLibrary);
+                    answer.HandleType(AnswerEditPrefab.AnswerType.Text, imageLibrary);
                 }
                 break;
             case 1:
@@ -87,7 +88,7 @@ public class QuizMakerNew : MonoBehaviour
             case 2:
                 foreach (var answer in answers)
                 {
-                    answer.HandleType(AnswerPrefab.AnswerType.Image, imageLibrary);
+                    answer.HandleType(AnswerEditPrefab.AnswerType.Image, imageLibrary);
                 }
                 break;
         }
@@ -97,21 +98,9 @@ public class QuizMakerNew : MonoBehaviour
 
     private void Update()
     {
-        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
-
-        // Find the active (toggled-on) answer
-        AnswerPrefab activeAnswer = null;
-        foreach (var answer in answers)
-        {
-            if (answer.correctAnswer.isOn)
-            {
-                activeAnswer = answer;
-                break;
-            }
-        }
 
         // Creation requirements check
-        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text) || activeAnswer == null)
+        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text) || _correctAnswerSelected == false)
         {
             createButton.interactable = false;
         }
@@ -190,7 +179,7 @@ public class QuizMakerNew : MonoBehaviour
             GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
 
             // Optionally reset the answer prefab’s input fields/toggles
-            AnswerPrefab answerComponent = newAnswer.GetComponent<AnswerPrefab>();
+            AnswerEditPrefab answerComponent = newAnswer.GetComponent<AnswerEditPrefab>();
             if (answerComponent != null)
             {               
                 answerComponent.answerText.text = "";
@@ -208,10 +197,10 @@ public class QuizMakerNew : MonoBehaviour
 
     private void AnswersValidityCheck()
     {
-        var answers = answersList.GetComponentsInChildren<AnswerPrefab>();
+        var answers = answersList.GetComponentsInChildren<AnswerEditPrefab>();
 
         // Find the active (toggled-on) answer
-        AnswerPrefab activeAnswer = null;
+        AnswerEditPrefab activeAnswer = null;
         foreach (var answer in answers)
         {
             if (answer.correctAnswer.isOn)
@@ -220,6 +209,9 @@ public class QuizMakerNew : MonoBehaviour
                 break;
             }
         }
+
+        // Update the correct answer selected flag
+        _correctAnswerSelected = activeAnswer != null;
 
         // Update interactivity for all answers
         foreach (var answer in answers)
@@ -287,7 +279,7 @@ public class QuizMakerNew : MonoBehaviour
             foreach (var answerData in _quiz.answers)
             {
                 GameObject newAnswer = Instantiate(answerPrefab, answersList.transform);
-                AnswerPrefab answerComponent = newAnswer.GetComponent<AnswerPrefab>();
+                AnswerEditPrefab answerComponent = newAnswer.GetComponent<AnswerEditPrefab>();
                 if (answerComponent != null)
                 {
                     answerComponent.answerText.text = answerData.textAnswer;
@@ -414,7 +406,7 @@ public class QuizMakerNew : MonoBehaviour
 
             TMP_InputField inputField = answerGO.GetComponentInChildren<TMP_InputField>();
             Toggle toggle = answerGO.GetComponentInChildren<Toggle>();
-            AnswerPrefab answerScript = answerGO.GetComponent<AnswerPrefab>();
+            AnswerEditPrefab answerScript = answerGO.GetComponent<AnswerEditPrefab>();
 
             Answer answer = new Answer
             {

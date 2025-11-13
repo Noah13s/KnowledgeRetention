@@ -5,10 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/AppScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/QuizMaker.unity
-    guid: 02a24d836ec66034bac0628930f0700e
+    path: Assets/Scenes/QuizMaker2.unity
+    guid: 2652756b954655549b11fad8973f67a9
   m_configObjects: {}
