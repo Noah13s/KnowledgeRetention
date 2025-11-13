@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.UI;
 using static QuizMakerNew;
 using System.Linq;
+using System.IO;
 
 public class QuizPlayer : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class QuizPlayer : MonoBehaviour
     [SerializeField] private Transform answersParent;
     [SerializeField] private GameObject answerButtonPrefab;
     [SerializeField] private Button nextButton;
+    [SerializeField] private Image questionImage;
 
     private List<Quiz> loadedQuizzes = new();
     private int currentQuizIndex = 0;
@@ -76,6 +78,20 @@ public class QuizPlayer : MonoBehaviour
             totalQuizNb.text = total.ToString();
     }
 
+    private void ImageSetup(string _imagePath)
+    {
+        string _fullPath = Path.Combine(Application.persistentDataPath, _imagePath);
+        if (!File.Exists(_fullPath)) { return; }
+        byte[] imageBytes = File.ReadAllBytes(_fullPath);
+        Texture2D texture = new Texture2D(2, 2);
+        if (!texture.LoadImage(imageBytes))
+        {
+            Debug.LogError("Failed to load image from bytes!");
+        }
+
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        questionImage.sprite = sprite;
+    }
 
     private void ShowQuestion()
     {
@@ -91,6 +107,13 @@ public class QuizPlayer : MonoBehaviour
 
         currentButtons.Clear();
         questionText.text = currentQuiz.question;
+        if (currentQuiz.questionImage != null) { 
+            ImageSetup(currentQuiz.questionImage); 
+            questionImage.gameObject.SetActive(true); 
+        } else
+        {
+            questionImage.gameObject.SetActive(false);
+        }    
         nextButton.gameObject.SetActive(false);
 
         // Randomize the answer order

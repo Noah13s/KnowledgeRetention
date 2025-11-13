@@ -16,14 +16,18 @@ public class QuizMakerNew : MonoBehaviour
     [Header("Setup")]
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
+    [SerializeField] private Image questionImage;
     [SerializeField] private TMP_Dropdown answerType;
 
     [SerializeField] private GameObject answerPrefab; 
     [SerializeField] private GameObject answersList;
     [SerializeField] private TMP_Dropdown categoryTMP;
-
+    [Header("Managers")]
     [SerializeField] private CategoryManager categoryManager;
-    
+    [SerializeField] private ImageLibrary imageLibrary;
+
+    private string _questionImagePath;
+
     [System.Serializable]
     public class TextAnswer
     {
@@ -47,6 +51,20 @@ public class QuizMakerNew : MonoBehaviour
     {
         categoryManager.LoadCategories();
         LoadCategories(); // <-- Add this so it updates dropdown after loading
+        questionType.onValueChanged.AddListener((int value) => HandleQuestionType(value));
+    }
+
+    private void HandleQuestionType(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                questionImage.gameObject.SetActive(false);
+                break;
+            case 1:
+                questionImage.gameObject.SetActive(true);
+                break;
+        }
     }
 
     private void Update()
@@ -68,6 +86,7 @@ public class QuizMakerNew : MonoBehaviour
         {
             deleteButton.interactable = true;
         }
+
     }
 
     public void LoadCategories()
@@ -277,7 +296,60 @@ public class QuizMakerNew : MonoBehaviour
         }
     }
 
+    public void SetImage()
+    {
 
+
+        // Safety check
+        if (imageLibrary == null)
+        {
+            Debug.LogError("ImageLibrary reference not assigned in the inspector!");
+            return;
+        }
+
+        imageLibrary.mode = ImageLibrary.Mode.Select;
+
+        // Enable the image library UI
+        imageLibrary.gameObject.SetActive(true);
+
+        // Assign callback to handle when the user selects an image
+        imageLibrary.onSelectCallback = (string fullPath) =>
+        {
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.LogWarning("No image path returned from ImageLibrary.");
+                imageLibrary.gameObject.SetActive(false);
+                return;
+            }
+
+            //  Convert full path to relative path within persistent data
+            string persistentPath = Application.persistentDataPath;
+            string relativePath = fullPath.Replace(persistentPath + Path.DirectorySeparatorChar, "");
+
+            //  Store only relative path
+            _questionImagePath = relativePath;
+            Debug.Log($"Stored relative image path: {relativePath}");
+
+            //  Close the image library UI
+            imageLibrary.gameObject.SetActive(false);
+            ImageSetup(relativePath);
+        };
+    }
+
+    private void ImageSetup(string _imagePath)
+    {
+        string _fullPath = Path.Combine(Application.persistentDataPath, _imagePath);
+        if (!File.Exists(_fullPath)) { return; }
+        byte[] imageBytes = File.ReadAllBytes(_fullPath);
+        Texture2D texture = new Texture2D(2, 2);
+        if (!texture.LoadImage(imageBytes))
+        {
+            Debug.LogError("Failed to load image from bytes!");
+        }
+
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        questionImage.sprite = sprite;
+    }
 
     public void CreateQuiz()
     {
@@ -287,7 +359,7 @@ public class QuizMakerNew : MonoBehaviour
         quiz.questionType = questionType.options[questionType.value].text;
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
-        quiz.questionImage = ""; // Set this if you plan to include images later
+        quiz.questionImage = _questionImagePath; // Set this if you plan to include images later
         quiz.category = categoryTMP.options[categoryTMP.value].text;
 
         // 2️ Collect answers from instantiated prefabs
