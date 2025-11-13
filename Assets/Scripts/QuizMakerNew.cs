@@ -4,6 +4,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static QuizMakerNew;
 
 public class QuizMakerNew : MonoBehaviour
 {
@@ -132,8 +133,59 @@ public class QuizMakerNew : MonoBehaviour
 
                 // Disable the button if we reached the max allowed answers
                 addAnswer.interactable = (answersList.transform.childCount < maxAnswers);
+                AnswersValidityCheck();
             }
         }
+    }
+
+    private void AnswersValidityCheck()
+    {
+        var answers = answersList.GetComponentsInChildren<Answer>();
+
+        // Find the active (toggled-on) answer
+        Answer activeAnswer = null;
+        foreach (var answer in answers)
+        {
+            if (answer.correctAnswer.isOn)
+            {
+                activeAnswer = answer;
+                break;
+            }
+        }
+
+        // Update interactivity for all answers
+        foreach (var answer in answers)
+        {
+            answer.correctAnswer.onValueChanged.RemoveListener(AnswersValidityCheck);
+            answer.correctAnswer.interactable = (activeAnswer == null || answer == activeAnswer);
+            answer.correctAnswer.onValueChanged.AddListener(AnswersValidityCheck);
+        }
+    }
+
+    private void AnswersValidityCheck(bool value)
+    {
+        AnswersValidityCheck();
+    }
+
+    public void ResetQuiz()
+    {
+        // Set quiz name
+        quizName.text = "";
+
+        // Set question type dropdown
+        questionType.value = 0;
+
+        // Set question text
+        questionInput.text = "";
+
+        // Set answer type dropdown
+        answerType.value = 0;
+
+        // Set category dropdown
+        categoryTMP.value = 1;
+
+        // Clear any existing answers
+        ClearAnswers();
     }
 
     public void OpenQuiz(Quiz _quiz)
@@ -177,6 +229,7 @@ public class QuizMakerNew : MonoBehaviour
 
         // Re-enable add answer button if below limit
         addAnswer.interactable = answersList.transform.childCount < 4;
+        AnswersValidityCheck();
     }
 
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class Navigation : MonoBehaviour
@@ -9,6 +10,8 @@ public class Navigation : MonoBehaviour
     {
         public GameObject panel;
         public Button button;
+        public UnityEvent onOpen;
+        public UnityEvent onClose;
     }
 
     [Header("List of panels and their corresponding buttons")]
@@ -34,16 +37,28 @@ public class Navigation : MonoBehaviour
     }
 
     /// <summary>
-    /// Shows the selected panel and hides all others.
+    /// Shows the selected panel and hides all others, invoking open/close events.
     /// </summary>
     /// <param name="panelToShow">The panel to activate.</param>
     public void ShowPanel(GameObject panelToShow)
     {
         foreach (var item in link)
         {
-            if (item.panel != null)
+            if (item.panel == null)
+                continue;
+
+            bool shouldShow = item.panel == panelToShow;
+            bool wasActive = item.panel.activeSelf;
+
+            item.panel.SetActive(shouldShow);
+
+            if (shouldShow && !wasActive)
             {
-                item.panel.SetActive(item.panel == panelToShow);
+                item.onOpen?.Invoke();
+            }
+            else if (!shouldShow && wasActive)
+            {
+                item.onClose?.Invoke();
             }
         }
     }
