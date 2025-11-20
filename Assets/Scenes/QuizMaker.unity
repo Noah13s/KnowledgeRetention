@@ -289,7 +289,7 @@ RectTransform:
   m_Father: {fileID: 714300355}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1014,8 +1014,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 5, y: -8.5}
-  m_SizeDelta: {x: 0, y: 17}
+  m_AnchoredPosition: {x: 188, y: -197.5}
+  m_SizeDelta: {x: 366, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!210 &294083093
 SortingGroup:
@@ -2123,7 +2123,7 @@ RectTransform:
   m_Father: {fileID: 215955631}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2443,10 +2443,10 @@ MonoBehaviour:
   currentQuizNb: {fileID: 0}
   totalQuizNb: {fileID: 0}
   questionText: {fileID: 1042108709}
+  questionImage: {fileID: 0}
   answersParent: {fileID: 0}
   answerButtonPrefab: {fileID: 0}
   nextButton: {fileID: 0}
-  questionImage: {fileID: 0}
 --- !u!4 &731675689
 Transform:
   m_ObjectHideFlags: 0
@@ -2774,9 +2774,9 @@ RectTransform:
   m_Father: {fileID: 1979165540}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: 20}
+  m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &882349148
 MonoBehaviour:
@@ -3589,7 +3589,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 17}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1246782522
 MonoBehaviour:
@@ -3934,9 +3934,9 @@ RectTransform:
   m_Father: {fileID: 1979165540}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1306244952
 MonoBehaviour:
@@ -5087,8 +5087,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 688847237}
   m_HandleRect: {fileID: 688847236}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 1
+  m_Value: 0.9999997
+  m_Size: 0.75949365
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5170,8 +5170,8 @@ MonoBehaviour:
   dontDestroyOnLoad: 1
   contextSize: 500
   batchSize: 512
-  model: dolphin-2.9.2-Phi-3-Medium-IQ2_M.gguf
-  chatTemplate: phi-3
+  model: Qwen3-1.7B-Q4_K_M.gguf
+  chatTemplate: qwen3
   lora: 
   loraWeights: 
   flashAttention: 0
@@ -5181,9 +5181,9 @@ MonoBehaviour:
   SSLKey: 
   SSLKeyPath: 
   minContextLength: 0
-  maxContextLength: 4096
+  maxContextLength: 40960
   embeddingsOnly: 0
-  embeddingLength: 5120
+  embeddingLength: 2048
 --- !u!4 &1702181069
 Transform:
   m_ObjectHideFlags: 0
@@ -5453,7 +5453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1802268890
 RectTransform:
   m_ObjectHideFlags: 0

@@ -13,6 +13,9 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private Button addAnswer;
     [SerializeField] private Button createButton;
     [SerializeField] private Button deleteButton;
+    [SerializeField] private GameObject clearAnswersButton;
+    [SerializeField] private GameObject addAnswerButton;
+    [SerializeField] private GameObject inputAnswerGroup;
     [Header("Setup")]
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
@@ -22,6 +25,7 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private GameObject answerPrefab; 
     [SerializeField] private GameObject answersList;
     [SerializeField] private TMP_Dropdown categoryTMP;
+    [SerializeField] private TMP_InputField inputAnswer;
     [Header("Managers")]
     [SerializeField] private CategoryManager categoryManager;
     [SerializeField] private ImageLibrary imageLibrary;
@@ -45,6 +49,7 @@ public class QuizMakerNew : MonoBehaviour
         public string question;
         public string questionImage;
         public string answerType;// text // image // input //
+        public string inputAnswer;
         public string category;
         public Answer[] answers;
     }
@@ -81,15 +86,24 @@ public class QuizMakerNew : MonoBehaviour
                 {
                     answer.HandleType(AnswerEditPrefab.AnswerType.Text, imageLibrary);
                 }
+                clearAnswersButton.SetActive(true);
+                addAnswerButton.SetActive(true);
+                inputAnswerGroup.SetActive(false);
                 break;
             case 1:
-
+                clearAnswersButton.SetActive(false);
+                addAnswerButton.SetActive(false);
+                inputAnswerGroup.SetActive(true);
+                ClearAnswers();
                 break;
             case 2:
                 foreach (var answer in answers)
                 {
                     answer.HandleType(AnswerEditPrefab.AnswerType.Image, imageLibrary);
                 }
+                clearAnswersButton.SetActive(true);
+                addAnswerButton.SetActive(true);
+                inputAnswerGroup.SetActive(false);
                 break;
         }
     }
@@ -393,6 +407,7 @@ public class QuizMakerNew : MonoBehaviour
         quiz.questionType = questionType.options[questionType.value].text;
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
+        quiz.inputAnswer = inputAnswer.text;
         quiz.questionImage = _questionImagePath; // Set this if you plan to include images later
         quiz.category = categoryTMP.options[categoryTMP.value].text;
 
