@@ -10584,7 +10584,7 @@ MonoBehaviour:
   deleteButton: {fileID: 404645510}
   clearAnswersButton: {fileID: 1204559757}
   addAnswerButton: {fileID: 1311999758}
-  inputAnswer: {fileID: 1881757131}
+  inputAnswerGroup: {fileID: 0}
   questionType: {fileID: 562704073}
   questionInput: {fileID: 763277596}
   questionImage: {fileID: 1414099422}
@@ -10592,6 +10592,7 @@ MonoBehaviour:
   answerPrefab: {fileID: 6417864729066333613, guid: 8552549b1d83d5a4aa9fdbb96706c90c, type: 3}
   answersList: {fileID: 1471882191}
   categoryTMP: {fileID: 205561623}
+  inputAnswer: {fileID: 1881757131}
   categoryManager: {fileID: 1736839204}
   imageLibrary: {fileID: 1935774266}
 --- !u!1 &1126540488
@@ -18356,7 +18357,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1881757132
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18372,10 +18373,10 @@ RectTransform:
   - {fileID: 6434561708227667929}
   m_Father: {fileID: 1482241036}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 271.7465, y: -185}
+  m_SizeDelta: {x: 543.493, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1891339887
 GameObject:
