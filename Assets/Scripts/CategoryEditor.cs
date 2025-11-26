@@ -17,6 +17,7 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private Button setImageButton;
     [SerializeField] private Button addButton;
     [SerializeField] private Button openButton;
+    [SerializeField] private Button selectButton;
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text currentPathLabel;
     [SerializeField] private Button startQuizz;
@@ -24,11 +25,14 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private GameObject categoryPrefab;
     [SerializeField] private ScrollRect quizScrollRect;
     [SerializeField] private ScrollRect categoryScrollRect;
+    [SerializeField] private ScrollRect categorySelectionScrollRect;
     [SerializeField] private ImageLibrary imageLibrary;
     [SerializeField] private QuizPlayer quizPlayer;
     [SerializeField] private QuizMakerNew quizMaker;
 
     private List<CategoryElement> selectedCategories = new();
+    private List<string> quizFilterCategories = new();
+
 
     private string categoriesJsonFilePath;
     private string quizzJsonFilePath;
@@ -86,24 +90,28 @@ public class CategoryLibrary : MonoBehaviour
 
     private void LoadQuizzes()
     {
-        // Clear previous UI items
         foreach (Transform child in quizScrollRect.content)
             Destroy(child.gameObject);
 
         string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
         if (!Directory.Exists(quizFolderPath))
-        {
-            Debug.Log("No quizzes folder found.");
             return;
+
+        // Use full paths stored in quizFilterCategories, or fallback to current path
+        List<string> selectedPaths = new List<string>();
+        if (quizFilterCategories.Count > 0)
+        {
+            selectedPaths.AddRange(quizFilterCategories);
+        }
+        else
+        {
+            string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
+            selectedPaths.Add(currentCategoryPath);
         }
 
-        // Determine current category path (like "Root/Science/Physics")
-        string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
-        // Skip "Root" because in your EnterCategory() you start with "Root"
-
         string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
-
-        List<QuizMakerNew.Quiz> quizzesInCategory = new();
+        HashSet<string> addedFiles = new HashSet<string>();
+        List<QuizMakerNew.Quiz> quizzesToDisplay = new List<QuizMakerNew.Quiz>();
 
         foreach (string file in quizFiles)
         {
@@ -111,10 +119,20 @@ public class CategoryLibrary : MonoBehaviour
             {
                 string json = File.ReadAllText(file);
                 QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
+                if (quiz == null || string.IsNullOrEmpty(quiz.category))
+                    continue;
 
-                if (quiz != null && quiz.category == currentCategoryPath)
+                foreach (string catPath in selectedPaths)
                 {
-                    quizzesInCategory.Add(quiz);
+                    if (string.Equals(quiz.category, catPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!addedFiles.Contains(file))
+                        {
+                            quizzesToDisplay.Add(quiz);
+                            addedFiles.Add(file);
+                        }
+                        break;
+                    }
                 }
             }
             catch (System.Exception e)
@@ -123,10 +141,9 @@ public class CategoryLibrary : MonoBehaviour
             }
         }
 
-        // Display quizzes in quizScrollRect
-        foreach (QuizMakerNew.Quiz quiz in quizzesInCategory)
+        foreach (var quiz in quizzesToDisplay)
         {
-            GameObject quizItem = new("QuizItem", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(Button));
+            GameObject quizItem = new GameObject("QuizItem", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(Button));
             quizItem.transform.SetParent(quizScrollRect.content, false);
 
             TextMeshProUGUI text = quizItem.GetComponent<TextMeshProUGUI>();
@@ -135,11 +152,17 @@ public class CategoryLibrary : MonoBehaviour
             text.enableWordWrapping = true;
 
             var quizBtn = quizItem.GetComponent<Button>();
-            quizBtn.onClick.AddListener(() => { quizMaker.OpenQuiz(quiz); quizMaker.gameObject.SetActive(true); this.gameObject.SetActive(false); });
+            var capturedQuiz = quiz;
+            quizBtn.onClick.AddListener(() =>
+            {
+                quizMaker.OpenQuiz(capturedQuiz);
+                quizMaker.gameObject.SetActive(true);
+                this.gameObject.SetActive(false);
+            });
         }
-
-        Debug.Log($"Loaded {quizzesInCategory.Count} quizzes for category: {currentCategoryPath}");
     }
+
+
 
     private void SaveCategories()
     {
@@ -157,7 +180,6 @@ public class CategoryLibrary : MonoBehaviour
 
         RefreshUI();
         UpdatePathLabel();
-        LoadQuizzes(); //  show quizzes for this category
     }
 
 
@@ -170,6 +192,9 @@ public class CategoryLibrary : MonoBehaviour
         pathStack.Pop();
 
         currentCategoryList = navigationStack.Peek();
+
+        // Clear UI selections to avoid invalid toggle references
+        selectedCategories.Clear();
         RefreshUI();
         UpdatePathLabel();
         HandleToolbarButtons();
@@ -266,21 +291,30 @@ public class CategoryLibrary : MonoBehaviour
 
     public void StartQuizz()
     {
-        // Locate quiz folder
         string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
         if (!Directory.Exists(quizFolderPath))
         {
-            Debug.LogWarning("No quizzes folder found — cannot start quiz.");
+            Debug.LogWarning("No quizzes folder found.");
             return;
         }
 
-        // Build current category path (excluding "Root")
-        string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
+        List<string> selectedPaths = new List<string>();
 
-        // Find all JSON files in the quiz folder
+        // If filters exist, use them
+        if (quizFilterCategories.Count > 0)
+        {
+            selectedPaths.AddRange(quizFilterCategories);
+        }
+        else
+        {
+            // Fallback: current navigation path (exclude "Root")
+            string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
+            selectedPaths.Add(currentCategoryPath);
+        }
+
         string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
-
-        List<(QuizMakerNew.Quiz quiz, string filePath)> quizzesInCategory = new();
+        List<(QuizMakerNew.Quiz quiz, string filePath)> matchedQuizzes = new();
+        HashSet<string> addedFiles = new HashSet<string>();
 
         foreach (string file in quizFiles)
         {
@@ -289,45 +323,55 @@ public class CategoryLibrary : MonoBehaviour
                 string json = File.ReadAllText(file);
                 QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
 
-                if (quiz != null && quiz.category == currentCategoryPath)
+                if (quiz == null || string.IsNullOrEmpty(quiz.category))
+                    continue;
+
+                foreach (string catPath in selectedPaths)
                 {
-                    quizzesInCategory.Add((quiz, file));
+                    if (string.Equals(quiz.category, catPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!addedFiles.Contains(file))
+                        {
+                            matchedQuizzes.Add((quiz, file));
+                            addedFiles.Add(file);
+                        }
+                        break;
+                    }
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogWarning($"Failed to load quiz file {file}: {e.Message}");
             }
         }
 
-        if (quizzesInCategory.Count == 0)
+        if (matchedQuizzes.Count == 0)
         {
-            Debug.LogWarning($"No quizzes found for category '{currentCategoryPath}'.");
+            Debug.LogWarning("No quizzes found for the selected categories.");
             return;
         }
 
-        //  Find the QuizMaker object in the scene
         if (quizPlayer == null)
         {
-            Debug.LogError("No QuizMaker object found in the scene!");
+            Debug.LogError("QuizPlayer reference missing.");
             return;
         }
 
         quizPlayer.gameObject.SetActive(true);
 
-        //  Pass *all* quizzes to the QuizMaker
+        // Pass all quiz JSON files to the player
         List<string> quizJsonList = new List<string>();
-        foreach (var (_, filePath) in quizzesInCategory)
+
+        foreach (var (_, filePath) in matchedQuizzes)
         {
-            string quizJson = File.ReadAllText(filePath);
-            quizJsonList.Add(quizJson);
+            quizJsonList.Add(File.ReadAllText(filePath));
         }
 
-        // Assuming your QuizMaker has a new method for handling multiple quizzes
         quizPlayer.SetMultipleJsonStrings(quizJsonList);
 
-        Debug.Log($" Started {quizzesInCategory.Count} quizzes in category '{currentCategoryPath}'.");
+        Debug.Log($"Started {matchedQuizzes.Count} quizzes.");
     }
+
 
 
     public void SetImage()
@@ -433,6 +477,71 @@ public class CategoryLibrary : MonoBehaviour
         RefreshUI();
         HandleToolbarButtons();
     }
+    public void SelectCategories()
+    {
+        // base path parts for the current view (exclude "Root")
+        List<string> basePathParts = pathStack.Reverse().Skip(1).ToList();
+
+        foreach (var elem in selectedCategories)
+        {
+            string name = elem.CategoryData.Name;
+
+            // Build the full path of the selected category
+            var pathParts = new List<string>(basePathParts) { name };
+            string fullPath = string.Join("/", pathParts);
+
+            // Collect this path + all subcategories
+            List<string> allPaths = new List<string>();
+            CollectCategoryPaths(elem.CategoryData, fullPath, allPaths);
+
+            foreach (string p in allPaths)
+            {
+                if (!quizFilterCategories.Contains(p))
+                {
+                    quizFilterCategories.Add(p);
+
+                    GameObject item = new GameObject("SelectedCategory", typeof(RectTransform), typeof(TextMeshProUGUI));
+                    item.transform.SetParent(categorySelectionScrollRect.content, false);
+
+                    TextMeshProUGUI text = item.GetComponent<TextMeshProUGUI>();
+                    text.text = p;
+                    text.fontSize = 22;
+                    text.enableWordWrapping = true;
+                }
+            }
+        }
+
+        LoadQuizzes();
+    }
+
+    private void CollectCategoryPaths(
+    CategoryManager.Category category,
+    string currentPath,
+    List<string> output)
+    {
+        output.Add(currentPath);
+
+        if (category.subCategories == null)
+            return;
+
+        foreach (var sub in category.subCategories)
+        {
+            string subPath = currentPath + "/" + sub.Name;
+            CollectCategoryPaths(sub, subPath, output);
+        }
+    }
+
+
+    public void ClearSelectedCategories()
+    {
+        foreach (Transform child in categorySelectionScrollRect.content)
+            Destroy(child.gameObject);
+
+        quizFilterCategories.Clear();
+
+        LoadQuizzes();
+    }
+
 
 
 }
