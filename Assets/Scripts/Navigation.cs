@@ -12,34 +12,55 @@ public class Navigation : MonoBehaviour
         public Button button;
         public UnityEvent onOpen;
         public UnityEvent onClose;
+
+        [HideInInspector] public Color defaultColor;
     }
 
-    [Header("List of panels and their corresponding buttons")]
-    public List<PanelButtonLink> link;
+    [SerializeField] Color selectedColor = Color.blue;
+    [SerializeField] bool selectFirstOnStart = true;
 
-    private void Start()
+    [Header("List of panels and their corresponding buttons")]
+    public List<PanelButtonLink> link = new List<PanelButtonLink>();
+
+    void Awake()
     {
-        // Attach listeners to each button
+        // Cache default button colors
         foreach (var item in link)
         {
             if (item.button != null)
             {
-                GameObject targetPanel = item.panel; // capture local reference
-                item.button.onClick.AddListener(() => ShowPanel(targetPanel));
+                var img = item.button.GetComponent<Image>();
+                if (img != null)
+                {
+                    item.defaultColor = img.color;
+                }
             }
-        }
-
-        // Optionally, show only the first panel at start
-        if (link.Count > 0 && link[0].panel != null)
-        {
-            ShowPanel(link[0].panel);
         }
     }
 
-    /// <summary>
-    /// Shows the selected panel and hides all others, invoking open/close events.
-    /// </summary>
-    /// <param name="panelToShow">The panel to activate.</param>
+    void Start()
+    {
+        // Assign button listeners
+        foreach (var item in link)
+        {
+            if (item.button == null)
+                continue;
+
+            var targetPanel = item.panel;
+            item.button.onClick.AddListener(() => ShowPanel(targetPanel));
+        }
+
+        if (selectFirstOnStart && link.Count > 0 && link[0].panel != null)
+        {
+            ShowPanel(link[0].panel);
+        }
+        else
+        {
+            // Make sure only one is active if selectFirstOnStart = false
+            HideAll();
+        }
+    }
+
     public void ShowPanel(GameObject panelToShow)
     {
         foreach (var item in link)
@@ -47,18 +68,46 @@ public class Navigation : MonoBehaviour
             if (item.panel == null)
                 continue;
 
-            bool shouldShow = item.panel == panelToShow;
+            bool isTarget = item.panel == panelToShow;
             bool wasActive = item.panel.activeSelf;
+            item.panel.SetActive(isTarget);
 
-            item.panel.SetActive(shouldShow);
-
-            if (shouldShow && !wasActive)
+            // Invoke events
+            if (isTarget && !wasActive)
             {
                 item.onOpen?.Invoke();
             }
-            else if (!shouldShow && wasActive)
+            else if (!isTarget && wasActive)
             {
                 item.onClose?.Invoke();
+            }
+
+            // Update button color
+            if (item.button != null)
+            {
+                var img = item.button.GetComponent<Image>();
+                if (img != null)
+                {
+                    img.color = isTarget ? selectedColor : item.defaultColor;
+                }
+            }
+        }
+    }
+
+    void HideAll()
+    {
+        foreach (var item in link)
+        {
+            if (item.panel != null)
+                item.panel.SetActive(false);
+
+            if (item.button != null)
+            {
+                var img = item.button.GetComponent<Image>();
+                if (img != null)
+                {
+                    img.color = item.defaultColor;
+                }
             }
         }
     }

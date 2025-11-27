@@ -114,7 +114,7 @@ public class QuizMakerNew : MonoBehaviour
     {
 
         // Creation requirements check
-        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text) || _correctAnswerSelected == false)
+        if (String.IsNullOrEmpty(questionInput.text) || categoryTMP.value == -1 || String.IsNullOrEmpty(quizName.text) || ((answerType.options[answerType.value].text == "Text select" || answerType.options[answerType.value].text == "Image select") && _correctAnswerSelected == false))
         {
             createButton.interactable = false;
         }

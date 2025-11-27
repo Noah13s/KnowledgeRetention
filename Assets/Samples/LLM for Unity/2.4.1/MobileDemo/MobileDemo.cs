@@ -2,6 +2,8 @@ using UnityEngine;
 using LLMUnity;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using TMPro;
+using UnityEngine.Events;
 
 namespace LLMUnitySamples
 {
@@ -10,13 +12,15 @@ namespace LLMUnitySamples
         public LLMCharacter llmCharacter;
 
         public GameObject ChatPanel;
-        public InputField playerText;
-        public Text AIText;
+        public TMP_InputField playerText;
+        public TextMeshProUGUI AIText;
         public GameObject ErrorText;
 
         public GameObject DownloadPanel;
         public Scrollbar progressBar;
         public Text progressText;
+
+        public UnityEvent onAIResponseComplete;
 
         async void Start()
         {
@@ -56,11 +60,18 @@ namespace LLMUnitySamples
             progressBar.size = progress;
         }
 
-        void onInputFieldSubmit(string message)
+        public void onInputFieldSubmit(string message)
         {
             playerText.interactable = false;
             AIText.text = "...";
             _ = llmCharacter.Chat(message, SetAIText, AIReplyComplete);
+        }
+
+        public void onInputFieldSubmit(TMP_InputField message)
+        {
+            playerText.interactable = false;
+            AIText.text = "...";
+            _ = llmCharacter.Chat(message.text, SetAIText, AIReplyComplete);
         }
 
         public void SetAIText(string text)
@@ -73,6 +84,7 @@ namespace LLMUnitySamples
             playerText.interactable = true;
             playerText.Select();
             playerText.text = "";
+            onAIResponseComplete?.Invoke();
         }
 
         public void CancelRequests()

@@ -29,6 +29,10 @@ public class CategoryLibrary : MonoBehaviour
     [SerializeField] private ImageLibrary imageLibrary;
     [SerializeField] private QuizPlayer quizPlayer;
     [SerializeField] private QuizMakerNew quizMaker;
+    [SerializeField] private Navigation navigation;
+    [Header("DeleteConfirmation")]
+    [SerializeField] private GameObject deleteConfirmationPanel;
+    [SerializeField] private TextMeshProUGUI instructions;
 
     private List<CategoryElement> selectedCategories = new();
     private List<string> quizFilterCategories = new();
@@ -156,8 +160,7 @@ public class CategoryLibrary : MonoBehaviour
             quizBtn.onClick.AddListener(() =>
             {
                 quizMaker.OpenQuiz(capturedQuiz);
-                quizMaker.gameObject.SetActive(true);
-                this.gameObject.SetActive(false);
+                navigation.ShowPanel(navigation.link[1].panel);
             });
         }
     }
@@ -447,11 +450,28 @@ public class CategoryLibrary : MonoBehaviour
         RefreshUI();
     }
 
+    public void RequestDelete()
+    {
+        deleteConfirmationPanel?.SetActive(true);
+
+        string categoriesText = "None";
+
+        if (selectedCategories != null && selectedCategories.Count > 0)
+        {
+            categoriesText = string.Join(", ",
+                selectedCategories
+                    .Where(c => c != null && c.categoryNameText != null)
+                    .Select(c => c.categoryNameText.text));
+        }
+
+        instructions.text = "Are you sure you want to delete: " + categoriesText;
+    }
     public void DeleteCategory()
     {
         foreach (var elem in selectedCategories)
             currentCategoryList.Remove(elem.CategoryData);
 
+        deleteConfirmationPanel?.SetActive(false);
         selectedCategories.Clear();
         SaveCategories();
         RefreshUI();
@@ -514,6 +534,7 @@ public class CategoryLibrary : MonoBehaviour
         }
 
         LoadQuizzes();
+        HandleToolbarButtons();
     }
 
     private void CollectCategoryPaths(

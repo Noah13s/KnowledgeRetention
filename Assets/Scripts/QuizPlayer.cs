@@ -1,10 +1,12 @@
+using LLMUnity;
+using LLMUnitySamples;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
+using System.Linq;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 using static QuizMakerNew;
-using System.Linq;
-using System.IO;
 
 public class QuizPlayer : MonoBehaviour
 {
@@ -14,8 +16,12 @@ public class QuizPlayer : MonoBehaviour
     [SerializeField] private TMP_Text questionText;
     [SerializeField] private Image questionImage;
     [SerializeField] private Transform answersParent;
+    [SerializeField] private TMP_InputField answerInputField;
     [SerializeField] private GameObject answerButtonPrefab;
     [SerializeField] private Button nextButton;
+    [Header("Setup")]
+    [SerializeField] private MobileDemo mobileDemo;
+    [SerializeField] private TextMeshProUGUI aiResponse;
 
     private List<Quiz> loadedQuizzes = new();
     private int currentQuizIndex = 0;
@@ -67,7 +73,14 @@ public class QuizPlayer : MonoBehaviour
         currentQuizIndex++;
 
         answered = false;
-        ShowQuestion();
+        if (currentQuiz.inputAnswer != null && currentQuiz.answers.Length == 0)
+        {
+            ShowInputQuestion();
+        }
+        else
+        {
+            ShowQuestion();
+        }
     }
 
     private void UpdateQuizCounterUI(int current, int total)
@@ -93,6 +106,66 @@ public class QuizPlayer : MonoBehaviour
         questionImage.sprite = sprite;
     }
 
+    private void ShowInputQuestion()
+    {
+        if (currentQuiz == null)
+        {
+            Debug.LogError("No quiz loaded!");
+            return;
+        }
+        // Clear old answers
+        foreach (Transform child in answersParent)
+            Destroy(child.gameObject);
+
+        currentButtons.Clear();
+        questionText.text = currentQuiz.question;
+        answerInputField.gameObject.SetActive(true);
+        Debug.Log(currentQuiz.questionType);
+
+        if (currentQuiz.questionType == "Question + Image")
+        {
+            ImageSetup(currentQuiz.questionImage);
+            questionImage.transform.parent.gameObject.SetActive(true);
+        }
+        else if (currentQuiz.questionType == "Question only")
+        {
+            questionImage.transform.parent.gameObject.SetActive(false);
+        }
+        nextButton.gameObject.SetActive(false);
+    }
+
+    public void CheckInput()
+    {
+        mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Answer by true or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
+        nextButton.gameObject.SetActive(true);
+
+        // Remove previous listeners to avoid duplicates
+        mobileDemo.onAIResponseComplete.RemoveAllListeners();
+
+        mobileDemo.onAIResponseComplete.AddListener(() =>
+        {
+            string result = aiResponse.text.Trim().ToLower();
+
+            Image fieldImage = answerInputField.GetComponent<Image>();
+
+            if (result == "true")
+            {
+                fieldImage.color = Color.green;
+            }
+            else if (result == "false")
+            {
+                fieldImage.color = Color.red;
+            }
+            else
+            {
+                fieldImage.color = Color.yellow;
+                Debug.LogWarning("Unexpected AI response: " + aiResponse.text);
+            }
+            nextButton.gameObject.SetActive(true);
+
+        });
+    }
+
     private void ShowQuestion()
     {
         if (currentQuiz == null)
@@ -101,6 +174,7 @@ public class QuizPlayer : MonoBehaviour
             return;
         }
 
+        answerInputField.gameObject.SetActive(false);
         // Clear old answers
         foreach (Transform child in answersParent)
             Destroy(child.gameObject);
