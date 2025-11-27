@@ -442,6 +442,7 @@ public class CategoryLibrary : MonoBehaviour
         };
 
         currentCategoryList.Add(newCat);
+        selectedCategories.Clear();
         SaveCategories();
         RefreshUI();
     }
@@ -451,6 +452,7 @@ public class CategoryLibrary : MonoBehaviour
         foreach (var elem in selectedCategories)
             currentCategoryList.Remove(elem.CategoryData);
 
+        selectedCategories.Clear();
         SaveCategories();
         RefreshUI();
     }
