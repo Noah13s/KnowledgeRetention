@@ -370,8 +370,9 @@ public class ImageLibrary : MonoBehaviour
         }
 
         var imageElement = SelectedElements[0];
-
-        onSelectCallback?.Invoke(imageElement.imagePath);
+        var _path = imageElement.imagePath.Replace("\\", "/");
+        var _correctedPath = _path.Replace(Application.persistentDataPath, "").TrimStart('/');
+        onSelectCallback?.Invoke(_correctedPath);
         mode = Mode.Edit;
     }
 
