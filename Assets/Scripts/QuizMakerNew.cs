@@ -17,14 +17,15 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private GameObject addAnswerButton;
     [SerializeField] private GameObject inputAnswerGroup;
     [Header("Setup")]
+    [SerializeField] private TMP_Dropdown categoryTMP;
+    [Header("Question")]
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
     [SerializeField] private Image questionImage;
+    [Header("Answer")]
     [SerializeField] private TMP_Dropdown answerType;
-
     [SerializeField] private GameObject answerPrefab; 
     [SerializeField] private GameObject answersList;
-    [SerializeField] private TMP_Dropdown categoryTMP;
     [SerializeField] private TMP_InputField inputAnswer;
     [Header("Managers")]
     [SerializeField] private CategoryManager categoryManager;
@@ -280,6 +281,8 @@ public class QuizMakerNew : MonoBehaviour
         int answerTypeIndex = answerType.options.FindIndex(opt => opt.text == _quiz.answerType);
         answerType.value = answerTypeIndex >= 0 ? answerTypeIndex : 0;
 
+        inputAnswer.text = _quiz.inputAnswer;
+
         // Set category dropdown
         int categoryIndex = categoryTMP.options.FindIndex(opt => opt.text == _quiz.category);
         categoryTMP.value = categoryIndex >= 0 ? categoryIndex : 0;
@@ -299,6 +302,15 @@ public class QuizMakerNew : MonoBehaviour
                     answerComponent.answerText.text = answerData.textAnswer;
                     answerComponent.correctAnswer.isOn = answerData.correctAnswer;
                     answerComponent.aiAnswer.isOn = answerData.AIGen;
+                    answerComponent.imagePath = answerData.imageAnswerFile;
+                    if (_quiz.answerType == "Image select")
+                    {
+                        answerComponent.HandleType(AnswerEditPrefab.AnswerType.Image, imageLibrary);                        
+                    }
+                    else
+                    {
+                        answerComponent.HandleType(AnswerEditPrefab.AnswerType.Text, imageLibrary);
+                    }
                 }
             }
         }

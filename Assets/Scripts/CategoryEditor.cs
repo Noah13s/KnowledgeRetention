@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CategoryLibrary : MonoBehaviour
+public class CategoryEditor : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TMP_InputField categoryName;

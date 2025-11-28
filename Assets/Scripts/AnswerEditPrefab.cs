@@ -50,6 +50,7 @@ public class AnswerEditPrefab : MonoBehaviour
                 answerText.gameObject.SetActive(false);
                 aiAnswer.gameObject.SetActive(false);
                 imageAnswer.transform.parent.gameObject.SetActive(true);
+                ImageSetup(imagePath);
                 break;
         }
     }

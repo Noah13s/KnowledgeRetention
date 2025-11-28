@@ -13,12 +13,15 @@ public class QuizPlayer : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI currentQuizNb;
     [SerializeField] private TextMeshProUGUI totalQuizNb;
+    [Header("Question")]
     [SerializeField] private TMP_Text questionText;
     [SerializeField] private Image questionImage;
+    [Header("Answer")]
     [SerializeField] private Transform answersParent;
     [SerializeField] private TMP_InputField answerInputField;
     [SerializeField] private GameObject answerButtonPrefab;
     [SerializeField] private Button nextButton;
+    [SerializeField] private Button inputConfirmButton;
     [Header("Setup")]
     [SerializeField] private MobileDemo mobileDemo;
     [SerializeField] private TextMeshProUGUI aiResponse;
@@ -73,7 +76,7 @@ public class QuizPlayer : MonoBehaviour
         currentQuizIndex++;
 
         answered = false;
-        if (currentQuiz.inputAnswer != null && currentQuiz.answers.Length == 0)
+        if (currentQuiz.answerType == "Input")
         {
             ShowInputQuestion();
         }
@@ -120,6 +123,7 @@ public class QuizPlayer : MonoBehaviour
         currentButtons.Clear();
         questionText.text = currentQuiz.question;
         answerInputField.gameObject.SetActive(true);
+        inputConfirmButton.gameObject.SetActive(true);
         Debug.Log(currentQuiz.questionType);
 
         if (currentQuiz.questionType == "Question + Image")
@@ -138,6 +142,7 @@ public class QuizPlayer : MonoBehaviour
     {
         mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Answer by true or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
         nextButton.gameObject.SetActive(true);
+
 
         // Remove previous listeners to avoid duplicates
         mobileDemo.onAIResponseComplete.RemoveAllListeners();
@@ -173,7 +178,7 @@ public class QuizPlayer : MonoBehaviour
             Debug.LogError("No quiz loaded!");
             return;
         }
-
+        inputConfirmButton.gameObject.SetActive(false);
         answerInputField.gameObject.SetActive(false);
         // Clear old answers
         foreach (Transform child in answersParent)
@@ -245,21 +250,18 @@ public class QuizPlayer : MonoBehaviour
         else
         {
             SetButtonColor(clickedButton, Color.red);
-            Debug.Log("Wrong");
 
-            foreach (Transform child in answersParent)
+            // highlight the real correct button
+            foreach (var pair in currentButtons)
             {
-                Button b = child.GetComponent<Button>();
-                if (b == clickedButton) continue;
-
-                TMP_Text t = b.GetComponentInChildren<TMP_Text>();
-                if (currentQuiz.answers.Any(a => a.correctAnswer))
+                if (pair.isCorrect)
                 {
-                    SetButtonColor(b, Color.green);
+                    SetButtonColor(pair.button, Color.green);
                     break;
                 }
             }
         }
+
 
         nextButton.gameObject.SetActive(true);
     }
