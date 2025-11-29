@@ -123,6 +123,8 @@ public class QuizPlayer : MonoBehaviour
         currentButtons.Clear();
         questionText.text = currentQuiz.question;
         answerInputField.gameObject.SetActive(true);
+        answerInputField.text = "";
+        answerInputField.GetComponent<Image>().color = Color.white;
         inputConfirmButton.gameObject.SetActive(true);
         Debug.Log(currentQuiz.questionType);
 
@@ -160,6 +162,12 @@ public class QuizPlayer : MonoBehaviour
             else if (result == "false")
             {
                 fieldImage.color = Color.red;
+                mobileDemo.onInputFieldSubmit($"Briefly explain why the answered response is false and what was the awaited response. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
+                mobileDemo.onAIResponseComplete.RemoveAllListeners();
+                mobileDemo.onAIResponseComplete.AddListener(() =>
+                {
+                    answerInputField.text = aiResponse.text;
+                });
             }
             else
             {

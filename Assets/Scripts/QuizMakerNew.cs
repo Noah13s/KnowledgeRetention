@@ -420,7 +420,16 @@ public class QuizMakerNew : MonoBehaviour
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
         quiz.inputAnswer = inputAnswer.text;
-        quiz.questionImage = _questionImagePath; // Set this if you plan to include images later
+        if (!string.IsNullOrEmpty(_questionImagePath))
+        {
+            var _path1 = _questionImagePath.Replace("\\", "/");
+            var _correctedPath1 = _path1.Replace(Application.persistentDataPath, "").TrimStart('/');
+            quiz.questionImage = _correctedPath1; // Set this if you plan to include images later
+        }
+        else
+        {
+            quiz.questionImage = _questionImagePath; // Set this if you plan to include images later
+        }
         quiz.category = categoryTMP.options[categoryTMP.value].text;
 
         // 2️ Collect answers from instantiated prefabs
@@ -435,9 +444,11 @@ public class QuizMakerNew : MonoBehaviour
             Toggle toggle = answerGO.GetComponentInChildren<Toggle>();
             AnswerEditPrefab answerScript = answerGO.GetComponent<AnswerEditPrefab>();
 
+            var _path2 = answerScript.imagePath.Replace("\\", "/");
+            var _correctedPath2 = _path2.Replace(Application.persistentDataPath, "").TrimStart('/');
             Answer answer = new Answer
             {
-                imageAnswerFile = answerScript.imagePath,
+                imageAnswerFile = _correctedPath2,
                 textAnswer = answerScript.answerText.text,
                 correctAnswer = answerScript.correctAnswer.isOn,
                 AIGen = answerScript.aiAnswer.isOn // You can later add a toggle or flag for this

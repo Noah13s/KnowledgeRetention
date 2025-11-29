@@ -13,6 +13,7 @@ namespace LLMUnitySamples
 
         public GameObject ChatPanel;
         public TMP_InputField playerText;
+        public TMP_InputField answerInput;
         public TextMeshProUGUI AIText;
         public GameObject ErrorText;
 
@@ -26,6 +27,7 @@ namespace LLMUnitySamples
         {
             playerText.onSubmit.AddListener(onInputFieldSubmit);
             playerText.interactable = false;
+            answerInput.interactable = false;
             await DownloadThenWarmup();
         }
 
@@ -63,6 +65,7 @@ namespace LLMUnitySamples
         public void onInputFieldSubmit(string message)
         {
             playerText.interactable = false;
+            answerInput.interactable = false;
             AIText.text = "...";
             _ = llmCharacter.Chat(message, SetAIText, AIReplyComplete);
         }
@@ -70,6 +73,7 @@ namespace LLMUnitySamples
         public void onInputFieldSubmit(TMP_InputField message)
         {
             playerText.interactable = false;
+            answerInput.interactable = false;
             AIText.text = "...";
             _ = llmCharacter.Chat(message.text, SetAIText, AIReplyComplete);
         }
@@ -82,6 +86,7 @@ namespace LLMUnitySamples
         public void AIReplyComplete()
         {
             playerText.interactable = true;
+            answerInput.interactable = true;
             playerText.Select();
             playerText.text = "";
             onAIResponseComplete?.Invoke();

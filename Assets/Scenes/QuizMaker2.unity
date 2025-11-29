@@ -758,7 +758,7 @@ GameObject:
   - component: {fileID: 33766879}
   - component: {fileID: 33766878}
   m_Layer: 5
-  m_Name: InputField
+  m_Name: AnswerInputField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -781,7 +781,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 50}
+  m_AnchoredPosition: {x: 0, y: 138.67}
   m_SizeDelta: {x: 315, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &33766878
@@ -836,7 +836,7 @@ MonoBehaviour:
   m_InputType: 0
   m_AsteriskChar: 42
   m_KeyboardType: 0
-  m_LineType: 0
+  m_LineType: 1
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
@@ -990,7 +990,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 136.74649
+      value: 140.29886
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1063,8 +1063,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 271.99298, y: -502.3375}
-  m_SizeDelta: {x: 543.98596, y: 215.325}
+  m_AnchoredPosition: {x: 275.54535, y: -502.3375}
+  m_SizeDelta: {x: 551.0907, y: 215.325}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &54929601
 GameObject:
@@ -2148,6 +2148,7 @@ MonoBehaviour:
   llmCharacter: {fileID: 405096644}
   ChatPanel: {fileID: 196000632}
   playerText: {fileID: 1667504525}
+  answerInput: {fileID: 33766878}
   AIText: {fileID: 1115237424}
   ErrorText: {fileID: 1929774760}
   DownloadPanel: {fileID: 1231113528}
@@ -4935,7 +4936,7 @@ MonoBehaviour:
   save: 
   saveCache: 0
   debugPrompt: 0
-  numPredict: 256
+  numPredict: 150
   slot: -1
   grammar: 
   grammarJSON: 
@@ -5795,7 +5796,7 @@ MonoBehaviour:
   debug: 0
   parallelPrompts: -1
   dontDestroyOnLoad: 1
-  contextSize: 8192
+  contextSize: 300
   batchSize: 512
   model: Qwen3-1.7B-Q4_K_M.gguf
   chatTemplate: qwen3
@@ -7825,7 +7826,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 306.7465
+      value: 310.29886
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -10398,8 +10399,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 271.99298, y: -247.3375}
-  m_SizeDelta: {x: 543.98596, y: 294.675}
+  m_AnchoredPosition: {x: 275.54535, y: -247.3375}
+  m_SizeDelta: {x: 551.0907, y: 294.675}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &771483866
 MonoBehaviour:
@@ -12737,7 +12738,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 554321201}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -16383,7 +16384,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 0
+  m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -16671,7 +16672,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 306.7465
+      value: 310.29886
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -19559,7 +19560,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 136.74649
+      value: 140.29886
       objectReference: {fileID: 0}
     - target: {fileID: 229014643663411534, guid: de43a2dd8be2d3942ac6463f82dd04cc, type: 3}
       propertyPath: m_AnchoredPosition.y
