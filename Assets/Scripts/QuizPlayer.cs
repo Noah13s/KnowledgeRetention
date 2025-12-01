@@ -143,8 +143,7 @@ public class QuizPlayer : MonoBehaviour
     public void CheckInput()
     {
         mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Answer by true or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
-        nextButton.gameObject.SetActive(true);
-
+        inputConfirmButton.interactable = false;
 
         // Remove previous listeners to avoid duplicates
         mobileDemo.onAIResponseComplete.RemoveAllListeners();
@@ -175,6 +174,7 @@ public class QuizPlayer : MonoBehaviour
                 Debug.LogWarning("Unexpected AI response: " + aiResponse.text);
             }
             nextButton.gameObject.SetActive(true);
+            inputConfirmButton.interactable = true;
 
         });
     }

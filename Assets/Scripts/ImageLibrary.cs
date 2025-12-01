@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -35,9 +36,14 @@ public class ImageLibrary : MonoBehaviour
 
     // New: ToggleGroup to enforce single selection in Select mode
     private ToggleGroup selectionGroup;
+    private string rootFilePath;
+    private string currentFilePath;
 
     private void Start()
     {
+        rootFilePath = Path.Combine(Application.persistentDataPath, "Images");
+        currentFilePath = rootFilePath;
+
         // Example options: 0 = Name (A-Z), 1 = Name (Z-A), 2 = Date (Newest), 3 = Date (Oldest)
         sortDropdown.ClearOptions();
         sortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)", "Date (Newest)", "Date (Oldest)" });
@@ -94,7 +100,7 @@ public class ImageLibrary : MonoBehaviour
             imageElemScript.imageName.text = Path.GetFileName(images);
             imageElemScript.imagePath = images;
 
-            Toggle t = _imagePrefab.GetComponent<Toggle>();
+            Toggle t = imageElemScript.toggle;
             if (t != null)
             {
                 // assign to group if in Select mode
@@ -137,7 +143,7 @@ public class ImageLibrary : MonoBehaviour
             );
 
             // Assign the sprite to the UI Image
-            _imagePrefab.GetComponent<Image>().sprite = sprite;
+            imageElemScript.image.sprite = sprite;
         }
     }
 
@@ -186,39 +192,58 @@ public class ImageLibrary : MonoBehaviour
             imageElemScript.imageName.text = Path.GetFileName(imagePath);
             imageElemScript.imagePath = imagePath;
 
-            Toggle t = prefabInstance.GetComponent<Toggle>();
-            if (t != null)
-            {
-                if (mode == Mode.Select)
-                {
-                    EnsureToggleGroup();
-                    t.group = selectionGroup;
-                }
-                else
-                {
-                    t.group = null;
-                }
+            // Set folder flag
+            imageElemScript.isFolder = Directory.Exists(imagePath);
 
-                // initialize isSelected to toggle state and keep them in sync
-                t.isOn = imageElemScript.isSelected;
-                t.onValueChanged.AddListener((bool value) =>
+            // If it is a folder, skip image loading
+            if (imageElemScript.isFolder)
+            {
+                imageElemScript.toggle.gameObject.SetActive(false);
+                Button b = imageElemScript.button;
+                b.onClick.AddListener(() =>
                 {
-                    if (imageElemScript != null)
-                        imageElemScript.isSelected = value;
-                    NumberOfSelection();
+                    currentFilePath = Path.Combine(currentFilePath, imageElemScript.imageName.text);
+                    RefreshImageList();
                 });
             }
-
-            byte[] imageBytes = File.ReadAllBytes(imagePath);
-            Texture2D texture = new Texture2D(2, 2);
-            if (!texture.LoadImage(imageBytes))
+            else
             {
-                Debug.LogError("Failed to load image from bytes!");
-                continue;
+                imageElemScript.button.gameObject.SetActive(false);
+                Toggle t = imageElemScript.toggle;
+                if (t != null)
+                {
+                    if (mode == Mode.Select)
+                    {
+                        EnsureToggleGroup();
+                        t.group = selectionGroup;
+                    }
+                    else
+                    {
+                        t.group = null;
+                    }
+
+                    // initialize isSelected to toggle state and keep them in sync
+                    t.isOn = imageElemScript.isSelected;
+                    t.onValueChanged.AddListener((bool value) =>
+                    {
+                        if (imageElemScript != null)
+                            imageElemScript.isSelected = value;
+                        NumberOfSelection();
+                    });
+                }
+
+                byte[] imageBytes = File.ReadAllBytes(imagePath);
+                Texture2D texture = new Texture2D(2, 2);
+                if (!texture.LoadImage(imageBytes))
+                {
+                    Debug.LogError("Failed to load image from bytes!");
+                    continue;
+                }
+
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                imageElemScript.image.sprite = sprite;
             }
 
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            prefabInstance.GetComponent<Image>().sprite = sprite;
         }
     }
 
@@ -226,30 +251,33 @@ public class ImageLibrary : MonoBehaviour
     /// <summary>
     /// Retrieves a list of image file paths in the "Images" folder under Application.persistentDataPath.
     /// </summary>
-    public static List<string> GetImageFilePaths()
+    public List<string> GetImageFilePaths()
     {
-        string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
+        string imagesFolderPath = currentFilePath;
 
-        List<string> imagePaths = new List<string>();
+        List<string> results = new List<string>();
 
-        // Create the folder if it doesn't exist
         if (!Directory.Exists(imagesFolderPath))
         {
-            Debug.LogWarning($"Images folder not found. Creating new folder at: {imagesFolderPath}");
             Directory.CreateDirectory(imagesFolderPath);
-            return imagePaths; // Return empty list since no files yet
+            return results;
         }
 
-        // Get all image files with supported extensions
+        // Add subfolders
+        string[] folders = Directory.GetDirectories(imagesFolderPath, "*", SearchOption.TopDirectoryOnly);
+        results.AddRange(folders);
+
+        // Add image files
         string[] supportedExtensions = { "*.png", "*.jpg", "*.jpeg" };
         foreach (string ext in supportedExtensions)
         {
             string[] files = Directory.GetFiles(imagesFolderPath, ext, SearchOption.TopDirectoryOnly);
-            imagePaths.AddRange(files);
+            results.AddRange(files);
         }
 
-        return imagePaths;
+        return results;
     }
+
 
     public void RefreshImageList()
     {
@@ -441,13 +469,33 @@ public class ImageLibrary : MonoBehaviour
         if (SelectedElements.Count == 1)
         {
             var element = SelectedElements[0];
-            var image = element.GetComponent<Image>();
+            var image = element.image;
             if (image != null)
                 return image.sprite;
         }
 
         Debug.LogWarning("No image selected or multiple selections.");
         return null;
+    }
+
+    public void GoUpOneFolder()
+    {
+        if (string.IsNullOrEmpty(currentFilePath) || string.IsNullOrEmpty(rootFilePath))
+            return;
+
+        string parent = Directory.GetParent(currentFilePath)?.FullName;
+        if (parent == null)
+            return;
+
+        // Prevent going above the root
+        string normalizedParent = Path.GetFullPath(parent);
+        string normalizedRoot = Path.GetFullPath(rootFilePath);
+
+        if (normalizedParent.StartsWith(normalizedRoot))
+        {
+            currentFilePath = normalizedParent;
+            RefreshImageList();
+        }
     }
 
     public void ImportImage()
@@ -479,7 +527,7 @@ public class ImageLibrary : MonoBehaviour
 
                 // Get file name
                 string fileName = Path.GetFileName(path);
-                string destPath = Path.Combine(imagesDir, fileName);
+                string destPath = Path.Combine(currentFilePath, fileName);
 
                 // If file with same name exists, create unique name
                 int counter = 1;
@@ -507,5 +555,113 @@ public class ImageLibrary : MonoBehaviour
         }, imageFileTypes);
 
         RefreshImageList();
+    }
+
+    public void ExportAllPersistentData()
+    {
+        try
+        {
+            string sourceDir = Application.persistentDataPath;
+            string tempDir = Path.Combine(sourceDir, "ExportPersistentTemp");
+            string archivePath = Path.Combine(sourceDir, "PersistentDataBackup.zip");
+
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+            Directory.CreateDirectory(tempDir);
+
+            CopyDirectoryRecursive(sourceDir, tempDir);
+
+            if (File.Exists(archivePath))
+                File.Delete(archivePath);
+
+            ZipFile.CreateFromDirectory(tempDir, archivePath);
+
+            Directory.Delete(tempDir, true);
+
+            NativeFilePicker.ExportFile(archivePath, (success) =>
+            {
+                try
+                {
+                    if (File.Exists(archivePath))
+                        File.Delete(archivePath);
+                }
+                catch (System.Exception cleanupErr)
+                {
+                    Debug.LogError("Failed to delete temp archive: " + cleanupErr.Message);
+                }
+            });
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Error exporting persistent data: " + e.Message);
+        }
+    }
+
+    private void CopyDirectoryRecursive(string source, string destination)
+    {
+        if (!Directory.Exists(destination))
+            Directory.CreateDirectory(destination);
+
+        foreach (string dir in Directory.GetDirectories(source))
+        {
+            if (dir.EndsWith("ExportPersistentTemp"))
+                continue;
+
+            string targetSubDir = Path.Combine(destination, Path.GetFileName(dir));
+            CopyDirectoryRecursive(dir, targetSubDir);
+        }
+
+        foreach (string file in Directory.GetFiles(source))
+        {
+            string targetFile = Path.Combine(destination, Path.GetFileName(file));
+            File.Copy(file, targetFile, true);
+        }
+    }
+
+    public void ImportPersistentDataZip()
+    {
+        string[] fileTypes = {
+        NativeFilePicker.ConvertExtensionToFileType("zip")
+    };
+
+        NativeFilePicker.PickFile((path) =>
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.Log("Import cancelled.");
+                return;
+            }
+
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    Debug.LogError("Selected file not found.");
+                    return;
+                }
+
+                string persistent = Application.persistentDataPath;
+
+                // Clean current persistent data
+                foreach (string dir in Directory.GetDirectories(persistent))
+                {
+                    Directory.Delete(dir, true);
+                }
+                foreach (string file in Directory.GetFiles(persistent))
+                {
+                    File.Delete(file);
+                }
+
+                // Extract the zip
+                ZipFile.ExtractToDirectory(path, persistent);
+
+                Debug.Log("Persistent data imported successfully.");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Error importing persistent data: " + e.Message);
+            }
+
+        }, fileTypes);
     }
 }
