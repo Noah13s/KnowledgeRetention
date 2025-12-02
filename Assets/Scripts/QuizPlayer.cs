@@ -142,7 +142,7 @@ public class QuizPlayer : MonoBehaviour
 
     public void CheckInput()
     {
-        mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Answer by true or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
+        mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Be permissive the answer doesn't need to be exactly the one awaited but if its missing context or words return partial. Answer by true or false or partial. If the anwser is missing some context or words return partial or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}. Respond either true, false or partial. Prioritize true and false");
         inputConfirmButton.interactable = false;
 
         // Remove previous listeners to avoid duplicates
@@ -168,10 +168,21 @@ public class QuizPlayer : MonoBehaviour
                     answerInputField.text = aiResponse.text;
                 });
             }
-            else
+            else if (result=="partial")
             {
                 fieldImage.color = Color.yellow;
+                mobileDemo.onInputFieldSubmit($"Briefly explain why the answered response is partially true and what was the awaited response.The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
+                mobileDemo.onAIResponseComplete.RemoveAllListeners();
+                mobileDemo.onAIResponseComplete.AddListener(() =>
+                {
+                    answerInputField.text = aiResponse.text;
+                });
+            }
+            else
+            {
+                fieldImage.color = Color.magenta;
                 Debug.LogWarning("Unexpected AI response: " + aiResponse.text);
+                answerInputField.text = aiResponse.text;
             }
             nextButton.gameObject.SetActive(true);
             inputConfirmButton.interactable = true;
