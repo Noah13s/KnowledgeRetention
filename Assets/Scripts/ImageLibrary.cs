@@ -23,6 +23,7 @@ public class ImageLibrary : MonoBehaviour
     [SerializeField] private Button cancel;
     [SerializeField] private Button rename;
     [SerializeField] private Button delete;
+    [SerializeField] private Button goBack;
     [Header("Setup")]
     [SerializeField] public Mode mode;
     [SerializeField] private ScrollRect imageScrollRect;
@@ -284,7 +285,8 @@ public class ImageLibrary : MonoBehaviour
         ClearImageList();
         SetupMode();
         BuildImageLibrary(sortDropdown.value);
-    }
+        HandleTools();
+    } 
 
     private void SetupMode()
     {
@@ -369,6 +371,15 @@ public class ImageLibrary : MonoBehaviour
         else
         {
             delete.interactable = false;
+        }
+
+        if (Path.GetFullPath(currentFilePath) == Path.GetFullPath(rootFilePath))
+        {
+            goBack.interactable = false;
+        }
+        else
+        {
+            goBack.interactable = true;
         }
     }
 

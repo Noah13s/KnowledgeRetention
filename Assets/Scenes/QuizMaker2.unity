@@ -11207,7 +11207,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 828292601}
   m_OnClick:
     m_PersistentCalls:
@@ -26708,6 +26708,7 @@ MonoBehaviour:
   cancel: {fileID: 578911498}
   rename: {fileID: 31266530}
   delete: {fileID: 2021307853}
+  goBack: {fileID: 828292600}
   mode: 0
   imageScrollRect: {fileID: 1041657302}
   imagePrefab: {fileID: 8153741938793774384, guid: 864473a90ea223045b797fa41f434291, type: 3}
