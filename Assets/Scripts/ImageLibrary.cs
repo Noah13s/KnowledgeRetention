@@ -580,13 +580,28 @@ public class ImageLibrary : MonoBehaviour
                 Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
 
-            CopyDirectoryRecursive(sourceDir, tempDir);
+            // Copy categories.json
+            string categoriesSrc = Path.Combine(sourceDir, "categories.json");
+            string categoriesDst = Path.Combine(tempDir, "categories.json");
+            if (File.Exists(categoriesSrc))
+                File.Copy(categoriesSrc, categoriesDst, true);
+
+            // Copy Images folder
+            string imagesSrc = Path.Combine(sourceDir, "Images");
+            string imagesDst = Path.Combine(tempDir, "Images");
+            if (Directory.Exists(imagesSrc))
+                CopyDirectoryRecursive(imagesSrc, imagesDst);
+
+            // Copy quizzes folder
+            string quizzesSrc = Path.Combine(sourceDir, "quizzes");
+            string quizzesDst = Path.Combine(tempDir, "quizzes");
+            if (Directory.Exists(quizzesSrc))
+                CopyDirectoryRecursive(quizzesSrc, quizzesDst);
 
             if (File.Exists(archivePath))
                 File.Delete(archivePath);
 
             ZipFile.CreateFromDirectory(tempDir, archivePath);
-
             Directory.Delete(tempDir, true);
 
             NativeFilePicker.ExportFile(archivePath, (success) =>
@@ -607,6 +622,7 @@ public class ImageLibrary : MonoBehaviour
             Debug.LogError("Error exporting persistent data: " + e.Message);
         }
     }
+
 
     private void CopyDirectoryRecursive(string source, string destination)
     {
