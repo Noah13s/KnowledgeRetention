@@ -4082,7 +4082,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: -17}
+  m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &335411926
 MonoBehaviour:
@@ -5760,7 +5760,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 5
+  m_text: 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10187,6 +10187,7 @@ MonoBehaviour:
   backButton: {fileID: 577118152}
   currentPathLabel: {fileID: 1718181941}
   startQuizz: {fileID: 135383041}
+  startAmount: {fileID: 1370295183}
   categoryPrefab: {fileID: 8153741938793774384, guid: e325f80811a170a4282c3c6d611d55c3, type: 3}
   quizScrollRect: {fileID: 1771316207}
   categoryScrollRect: {fileID: 2112200001}
@@ -18173,6 +18174,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slider: {fileID: 747005601}
   text: {fileID: 433758650}
+  value: -1
 --- !u!1 &1370930115
 GameObject:
   m_ObjectHideFlags: 0
@@ -23441,7 +23443,7 @@ MonoBehaviour:
     m_Left: 20
     m_Right: 20
     m_Top: 20
-    m_Bottom: 20
+    m_Bottom: 50
   m_ChildAlignment: 1
   m_StartCorner: 0
   m_StartAxis: 0

@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class CategoryEditor : MonoBehaviour
 {
     [Header("UI References")]
+    [Header("Header")]
     [SerializeField] private TMP_InputField categoryName;
     [SerializeField] private TMP_Dropdown sortDropdown;
     [SerializeField] private Button addCategory;
@@ -20,7 +21,9 @@ public class CategoryEditor : MonoBehaviour
     [SerializeField] private Button selectButton;
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text currentPathLabel;
+    [Header("Footer")]
     [SerializeField] private Button startQuizz;
+    [SerializeField] private SliderHandler startAmount;
     [Header("Setup")]
     [SerializeField] private GameObject categoryPrefab;
     [SerializeField] private ScrollRect quizScrollRect;
@@ -301,31 +304,35 @@ public class CategoryEditor : MonoBehaviour
             return;
         }
 
+        // Determine selected category paths
         List<string> selectedPaths = new List<string>();
-
-        // If filters exist, use them
         if (quizFilterCategories.Count > 0)
         {
             selectedPaths.AddRange(quizFilterCategories);
         }
         else
         {
-            // Fallback: current navigation path (exclude "Root")
             string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
             selectedPaths.Add(currentCategoryPath);
         }
 
         string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
-        List<(QuizMakerNew.Quiz quiz, string filePath)> matchedQuizzes = new();
+        List<(QuizMakerNew.Quiz quiz, string filePath)> matchedQuizzes = new List<(QuizMakerNew.Quiz, string)>();
         HashSet<string> addedFiles = new HashSet<string>();
+
+        bool unlimited = (int)startAmount.value == -1;
+        int limit = unlimited ? int.MaxValue : Mathf.Max(1, (int)startAmount.value);
+        int count = 0;
 
         foreach (string file in quizFiles)
         {
+            if (!unlimited && count >= limit)
+                break;
+
             try
             {
                 string json = File.ReadAllText(file);
                 QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
-
                 if (quiz == null || string.IsNullOrEmpty(quiz.category))
                     continue;
 
@@ -337,14 +344,17 @@ public class CategoryEditor : MonoBehaviour
                         {
                             matchedQuizzes.Add((quiz, file));
                             addedFiles.Add(file);
+                            count++;
+
+                            if (!unlimited && count >= limit)
+                                break;
                         }
-                        break;
                     }
                 }
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Failed to load quiz file {file}: {e.Message}");
+                Debug.LogWarning("Failed to load quiz file " + file + ": " + e.Message);
             }
         }
 
@@ -362,18 +372,14 @@ public class CategoryEditor : MonoBehaviour
 
         quizPlayer.gameObject.SetActive(true);
 
-        // Pass all quiz JSON files to the player
         List<string> quizJsonList = new List<string>();
-
-        foreach (var (_, filePath) in matchedQuizzes)
-        {
-            quizJsonList.Add(File.ReadAllText(filePath));
-        }
+        foreach (var entry in matchedQuizzes)
+            quizJsonList.Add(File.ReadAllText(entry.filePath));
 
         quizPlayer.SetMultipleJsonStrings(quizJsonList);
-
-        Debug.Log($"Started {matchedQuizzes.Count} quizzes.");
     }
+
+
 
 
 

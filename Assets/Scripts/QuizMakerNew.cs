@@ -272,6 +272,7 @@ public class QuizMakerNew : MonoBehaviour
         int questionTypeIndex = questionType.options.FindIndex(opt => opt.text == _quiz.questionType);
         questionType.value = questionTypeIndex >= 0 ? questionTypeIndex : 0;
 
+        _questionImagePath = _quiz.questionImage;
         ImageSetup(_quiz.questionImage);
 
         // Set question text
@@ -358,7 +359,6 @@ public class QuizMakerNew : MonoBehaviour
 
     public void SetImage()
     {
-
 
         // Safety check
         if (imageLibrary == null)
