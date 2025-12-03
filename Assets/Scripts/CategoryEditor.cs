@@ -106,15 +106,14 @@ public class CategoryEditor : MonoBehaviour
 
         // Use full paths stored in quizFilterCategories, or fallback to current path
         List<string> selectedPaths = new List<string>();
-        if (quizFilterCategories.Count > 0)
+
+        if (quizFilterCategories.Count == 0)
         {
-            selectedPaths.AddRange(quizFilterCategories);
+            // No categories selected, do not load any quizzes
+            return;
         }
-        else
-        {
-            string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
-            selectedPaths.Add(currentCategoryPath);
-        }
+
+        selectedPaths.AddRange(quizFilterCategories);
 
         string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
         HashSet<string> addedFiles = new HashSet<string>();
