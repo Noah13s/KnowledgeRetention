@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class ImageLibrary : MonoBehaviour
@@ -17,6 +19,7 @@ public class ImageLibrary : MonoBehaviour
     }
 
     [Header("Tools")]
+    [Header("Header")]
     [SerializeField] private Button import;
     [SerializeField] private TMP_InputField input;
     [SerializeField] private Button open;
@@ -24,6 +27,9 @@ public class ImageLibrary : MonoBehaviour
     [SerializeField] private Button rename;
     [SerializeField] private Button delete;
     [SerializeField] private Button goBack;
+    [Header("Footer")]
+    [SerializeField] private Button updateData;
+    [SerializeField] private Slider dataUpdateProgress;
     [Header("Setup")]
     [SerializeField] public Mode mode;
     [SerializeField] private ScrollRect imageScrollRect;
@@ -50,6 +56,8 @@ public class ImageLibrary : MonoBehaviour
         sortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)", "Date (Newest)", "Date (Oldest)" });
         sortDropdown.onValueChanged.AddListener(OnSortOptionChanged);
         RefreshImageList();
+
+        StartCoroutine(CheckInternetRoutine());
     }
 
     private void OnEnable()
@@ -645,6 +653,36 @@ public class ImageLibrary : MonoBehaviour
         }
     }
 
+    private void ImportPersistentDataZip(string path)
+    {
+        if (!File.Exists(path))
+        {
+            Debug.LogError("Zip file not found.");
+            return;
+        }
+
+        try
+        {
+            string persistent = Application.persistentDataPath;
+
+            foreach (string dir in Directory.GetDirectories(persistent))
+            {
+                Directory.Delete(dir, true);
+            }
+            foreach (string file in Directory.GetFiles(persistent))
+            {
+                File.Delete(file);
+            }
+
+            ZipFile.ExtractToDirectory(path, persistent);
+
+            Debug.Log("Persistent data imported successfully.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Error importing persistent data: " + e.Message);
+        }
+    }
     public void ImportPersistentDataZip()
     {
         string[] fileTypes = {
@@ -690,5 +728,53 @@ public class ImageLibrary : MonoBehaviour
             }
 
         }, fileTypes);
+    }
+
+    public void ImportFromGoogleDrive(string fileId)
+    {
+        StartCoroutine(DownloadAndImport(fileId));
+    }
+
+    private IEnumerator DownloadAndImport(string fileId)
+    {
+        string url = "https://drive.google.com/uc?export=download&id=" + fileId;
+        string tempZipPath = Path.Combine(Application.temporaryCachePath, "persistent.zip");
+
+        if (File.Exists(tempZipPath))
+            File.Delete(tempZipPath);
+
+        UnityWebRequest req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
+        req.downloadHandler = new DownloadHandlerFile(tempZipPath);
+
+        req.SendWebRequest();
+
+        while (!req.isDone)
+        {
+            if (dataUpdateProgress != null)
+                dataUpdateProgress.value = req.downloadProgress;
+
+            yield return null;
+        }
+
+        if (req.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("Download failed: " + req.error);
+            yield break;
+        }
+
+        if (dataUpdateProgress != null)
+            dataUpdateProgress.value = 1f;
+
+        ImportPersistentDataZip(tempZipPath);
+    }
+
+    private IEnumerator CheckInternetRoutine()
+    {
+        while (true)
+        {
+            bool connected = Application.internetReachability != NetworkReachability.NotReachable;
+            updateData.interactable = connected;
+            yield return new WaitForSeconds(1f);
+        }
     }
 }

@@ -167,7 +167,72 @@ public class CategoryEditor : MonoBehaviour
         }
     }
 
+    // Keep the original (misspelled) method name for compatibility, but update its implementation.
+    public void RefreshCategriesEditor()
+    {
+        if (string.IsNullOrEmpty(categoriesJsonFilePath))
+            return;
 
+        // Capture current path names so we can attempt to restore the view after reloading.
+        var savedPathNames = pathStack.Reverse().ToList();
+
+        // Reload categories from file
+        LoadCategories();
+
+        // Clear existing navigation state and selections
+        navigationStack.Clear();
+        pathStack.Clear();
+        selectedCategories.Clear();
+
+        // Rebuild the navigation stack from the saved path names.
+        // Start from root list
+        List<CategoryManager.Category> currentList = rootData.categories;
+
+        if (savedPathNames.Count == 0)
+        {
+            // Ensure at least root is displayed
+            EnterCategory(rootData.categories, "Root");
+        }
+        else
+        {
+            for (int i = 0; i < savedPathNames.Count; i++)
+            {
+                string name = savedPathNames[i];
+
+                if (i == 0)
+                {
+                    // First entry should be root (or whatever label was used)
+                    EnterCategory(currentList, name);
+                }
+                else
+                {
+                    // Find the category with the saved name in the current list
+                    var found = currentList.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.Ordinal));
+                    if (found == null)
+                    {
+                        // Path no longer exists in the reloaded data; stop restoring deeper levels
+                        break;
+                    }
+
+                    if (found.subCategories == null)
+                        found.subCategories = new List<CategoryManager.Category>();
+
+                    currentList = found.subCategories;
+                    EnterCategory(currentList, found.Name);
+                }
+            }
+        }
+
+        // Final UI/toolbar/quiz refresh
+        HandleToolbarButtons();
+        LoadQuizzes();
+    }
+
+    // Optional: provide correctly spelled public method that forwards to the existing one.
+    public void RefreshCategoriesEditor()
+    {
+        RefreshCategriesEditor();
+    }
 
     private void SaveCategories()
     {
