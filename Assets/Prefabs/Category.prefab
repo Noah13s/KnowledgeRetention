@@ -279,9 +279,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 87731ac9a8eb1be48a003d9f16962138, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -304,6 +304,11 @@ MonoBehaviour:
   imageName: {fileID: 8608614376762827286}
   imagePath: 
   selectOverlay: {fileID: 2066131097069561513}
+  isFolder: 0
+  folderIcon: {fileID: 0}
+  image: {fileID: 0}
+  toggle: {fileID: 0}
+  button: {fileID: 0}
   isSelected: 0
 --- !u!114 &3928340815850202895
 MonoBehaviour:
