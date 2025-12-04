@@ -11,6 +11,7 @@ public class SliderHandler : MonoBehaviour
     void Start()
     {
         slider.onValueChanged.AddListener((float _val) =>  { UpdateText(_val); });
+        value = (int)slider.value;
     }
 
     private void UpdateText(float _val)
