@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static QuizMakerNew;
 
 public class QuizMakerNew : MonoBehaviour
 {
