@@ -23,7 +23,7 @@ public class QuizPlayer : MonoBehaviour
     [SerializeField] private Button nextButton;
     [SerializeField] private Button inputConfirmButton;
     [Header("Setup")]
-    [SerializeField] private MobileDemo mobileDemo;
+    [SerializeField] private AIHandler mobileDemo;
     [SerializeField] private TextMeshProUGUI aiResponse;
 
     private List<Quiz> loadedQuizzes = new();

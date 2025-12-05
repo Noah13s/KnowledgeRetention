@@ -2246,6 +2246,9 @@ MonoBehaviour:
   onAIResponseComplete:
     m_PersistentCalls:
       m_Calls: []
+    m_CallsDirty: 1
+  onValidateWarning: 1
+  onValidateInfo: 0
 --- !u!4 &145163437
 Transform:
   m_ObjectHideFlags: 0

@@ -2,8 +2,6 @@ using UnityEngine;
 using LLMUnity;
 using UnityEngine.UI;
 using System.Threading.Tasks;
-using TMPro;
-using UnityEngine.Events;
 
 namespace LLMUnitySamples
 {
@@ -12,22 +10,18 @@ namespace LLMUnitySamples
         public LLMCharacter llmCharacter;
 
         public GameObject ChatPanel;
-        public TMP_InputField playerText;
-        public TMP_InputField answerInput;
-        public TextMeshProUGUI AIText;
+        public InputField playerText;
+        public Text AIText;
         public GameObject ErrorText;
 
         public GameObject DownloadPanel;
         public Scrollbar progressBar;
         public Text progressText;
 
-        public UnityEvent onAIResponseComplete;
-
         async void Start()
         {
             playerText.onSubmit.AddListener(onInputFieldSubmit);
             playerText.interactable = false;
-            answerInput.interactable = false;
             await DownloadThenWarmup();
         }
 
@@ -62,20 +56,11 @@ namespace LLMUnitySamples
             progressBar.size = progress;
         }
 
-        public void onInputFieldSubmit(string message)
+        void onInputFieldSubmit(string message)
         {
             playerText.interactable = false;
-            answerInput.interactable = false;
             AIText.text = "...";
             _ = llmCharacter.Chat(message, SetAIText, AIReplyComplete);
-        }
-
-        public void onInputFieldSubmit(TMP_InputField message)
-        {
-            playerText.interactable = false;
-            answerInput.interactable = false;
-            AIText.text = "...";
-            _ = llmCharacter.Chat(message.text, SetAIText, AIReplyComplete);
         }
 
         public void SetAIText(string text)
@@ -86,10 +71,8 @@ namespace LLMUnitySamples
         public void AIReplyComplete()
         {
             playerText.interactable = true;
-            answerInput.interactable = true;
             playerText.Select();
             playerText.text = "";
-            onAIResponseComplete?.Invoke();
         }
 
         public void CancelRequests()
