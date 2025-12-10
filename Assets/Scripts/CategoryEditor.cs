@@ -11,7 +11,7 @@ public class CategoryEditor : MonoBehaviour
     [Header("UI References")]
     [Header("Header")]
     [SerializeField] private TMP_InputField categoryName;
-    [SerializeField] private TMP_Dropdown sortDropdown;
+    [SerializeField] private TMP_Dropdown categorySortDropdown;
     [SerializeField] private Button addCategory;
     [SerializeField] private Button renameButton;
     [SerializeField] private Button deleteButton;
@@ -22,6 +22,7 @@ public class CategoryEditor : MonoBehaviour
     [SerializeField] private Button backButton;
     [SerializeField] private TMP_Text currentPathLabel;
     [Header("Footer")]
+    [SerializeField] private TMP_Dropdown quizSortDropdown;
     [SerializeField] private Button startQuizz;
     [SerializeField] private SliderHandler startAmount;
     [Header("Setup")]
@@ -65,9 +66,17 @@ public class CategoryEditor : MonoBehaviour
 
     private void SetupSortDropdown()
     {
-        sortDropdown.ClearOptions();
-        sortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)" });
-        sortDropdown.onValueChanged.AddListener((int index) => RefreshUI());
+        // Quiz sort
+        quizSortDropdown.ClearOptions();
+        quizSortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)", "Random" });
+        quizSortDropdown.onValueChanged.AddListener((int index) =>
+        {
+            LoadQuizzes();
+        });
+        // Category sort
+        categorySortDropdown.ClearOptions();
+        categorySortDropdown.AddOptions(new List<string> { "Name (A–Z)", "Name (Z–A)" });
+        categorySortDropdown.onValueChanged.AddListener((int index) => RefreshUI());
     }
 
     // ---------------- LOAD / SAVE ----------------
@@ -145,6 +154,32 @@ public class CategoryEditor : MonoBehaviour
             {
                 Debug.LogWarning($"Failed to load quiz file {file}: {e.Message}");
             }
+        }
+
+        // Apply sorting from dropdown
+        int sortMode = quizSortDropdown.value;
+
+        // 0 = A to Z
+        // 1 = Z to A
+        // 2 = Random
+        if (sortMode == 0)
+        {
+            quizzesToDisplay = quizzesToDisplay
+                .OrderBy(q => q.quizName)
+                .ToList();
+        }
+        else if (sortMode == 1)
+        {
+            quizzesToDisplay = quizzesToDisplay
+                .OrderByDescending(q => q.quizName)
+                .ToList();
+        }
+        else if (sortMode == 2)
+        {
+            System.Random rng = new System.Random();
+            quizzesToDisplay = quizzesToDisplay
+                .OrderBy(q => rng.Next())
+                .ToList();
         }
 
         foreach (var quiz in quizzesToDisplay)
@@ -281,7 +316,7 @@ public class CategoryEditor : MonoBehaviour
 
     private void RefreshUI()
     {
-        BuildCategoryList(sortDropdown.value);
+        BuildCategoryList(categorySortDropdown.value);
     }
 
     private void BuildCategoryList(int sortMode)
@@ -442,9 +477,6 @@ public class CategoryEditor : MonoBehaviour
 
         quizPlayer.SetMultipleJsonStrings(quizJsonList);
     }
-
-
-
 
 
     public void SetImage()

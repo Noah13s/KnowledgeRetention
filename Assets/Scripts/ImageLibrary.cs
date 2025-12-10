@@ -57,7 +57,7 @@ public class ImageLibrary : MonoBehaviour
         sortDropdown.onValueChanged.AddListener(OnSortOptionChanged);
         RefreshImageList();
 
-        StartCoroutine(CheckInternetRoutine());
+        //StartCoroutine(CheckInternetRoutine());
     }
 
     private void OnEnable()
