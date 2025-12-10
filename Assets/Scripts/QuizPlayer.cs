@@ -128,6 +128,19 @@ public class QuizPlayer : MonoBehaviour
         inputConfirmButton.gameObject.SetActive(true);
         Debug.Log(currentQuiz.questionType);
 
+        if (currentQuiz.inputAnswerType == "Anything"|| string.IsNullOrEmpty(currentQuiz.inputAnswer))
+        {
+            answerInputField.contentType = TMP_InputField.ContentType.Standard;
+        } else if (currentQuiz.inputAnswerType == "Number") {
+            answerInputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+        } else if (currentQuiz.inputAnswerType == "Date")
+        {
+            answerInputField.contentType = TMP_InputField.ContentType.Custom;
+            answerInputField.keyboardType = TouchScreenKeyboardType.NumberPad;
+            answerInputField.characterValidation = TMP_InputField.CharacterValidation.None;
+            //^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$
+        }
+
         if (currentQuiz.questionType == "Question + Image")
         {
             ImageSetup(currentQuiz.questionImage);

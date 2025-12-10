@@ -25,6 +25,8 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private GameObject answerPrefab; 
     [SerializeField] private GameObject answersList;
     [SerializeField] private TMP_InputField inputAnswer;
+    [SerializeField] private TMP_Dropdown inputAnswerType;
+
     [Header("Managers")]
     [SerializeField] private CategoryManager categoryManager;
     [SerializeField] private ImageLibrary imageLibrary;
@@ -48,6 +50,7 @@ public class QuizMakerNew : MonoBehaviour
         public string question;
         public string questionImage;
         public string answerType;// text // image // input //
+        public string inputAnswerType;// Anything // Numbers // Date
         public string inputAnswer;
         public string category;
         public Answer[] answers;
@@ -282,6 +285,9 @@ public class QuizMakerNew : MonoBehaviour
 
         inputAnswer.text = _quiz.inputAnswer;
 
+        int inputAnswerTypeIndex = inputAnswerType.options.FindIndex(opt => opt.text == _quiz.inputAnswerType);
+        inputAnswerType.value = inputAnswerTypeIndex >= 0 ? inputAnswerTypeIndex : 0;
+
         // Set category dropdown
         int categoryIndex = categoryTMP.options.FindIndex(opt => opt.text == _quiz.category);
         categoryTMP.value = categoryIndex >= 0 ? categoryIndex : 0;
@@ -417,6 +423,7 @@ public class QuizMakerNew : MonoBehaviour
         quiz.questionType = questionType.options[questionType.value].text;
         quiz.question = questionInput.text;
         quiz.answerType = answerType.options[answerType.value].text;
+        quiz.inputAnswerType = inputAnswerType.options[inputAnswerType.value].text;
         quiz.inputAnswer = inputAnswer.text;
         if (!string.IsNullOrEmpty(_questionImagePath))
         {
