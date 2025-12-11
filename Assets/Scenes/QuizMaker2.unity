@@ -846,6 +846,7 @@ GameObject:
   - component: {fileID: 33766880}
   - component: {fileID: 33766879}
   - component: {fileID: 33766878}
+  - component: {fileID: 33766881}
   m_Layer: 5
   m_Name: AnswerInputField
   m_TagString: Untagged
@@ -928,7 +929,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
-  m_CharacterValidation: 6
+  m_CharacterValidation: 0
   m_RegexValue: '^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$ '
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
@@ -1009,6 +1010,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 33766876}
   m_CullTransparentMesh: 1
+--- !u!114 &33766881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33766876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99b0cd25a2ec7f34d9ab59b17fe3efe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &38024383
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15844,6 +15857,7 @@ MonoBehaviour:
   answerPrefab: {fileID: 6417864729066333613, guid: 8552549b1d83d5a4aa9fdbb96706c90c, type: 3}
   answersList: {fileID: 1471882191}
   inputAnswer: {fileID: 3543509746888184503}
+  inputAnswerType: {fileID: 1470611642}
   categoryManager: {fileID: 1736839204}
   imageLibrary: {fileID: 1935774266}
 --- !u!1 &1126005302
@@ -27523,7 +27537,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1881757132
 RectTransform:
   m_ObjectHideFlags: 0
@@ -27539,10 +27553,10 @@ RectTransform:
   - {fileID: 6434561708227667929}
   m_Father: {fileID: 1482241036}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 271.7465, y: -185}
+  m_SizeDelta: {x: 543.493, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1891339887
 GameObject:
