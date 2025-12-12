@@ -40,6 +40,7 @@ public class CategoryEditor : MonoBehaviour
 
     private List<CategoryElement> selectedCategories = new();
     private List<string> quizFilterCategories = new();
+    private List<string> sortedQuizJsons = new();
 
 
     private string categoriesJsonFilePath;
@@ -106,34 +107,46 @@ public class CategoryEditor : MonoBehaviour
 
     private void LoadQuizzes()
     {
+        // 1. Clear UI
         foreach (Transform child in quizScrollRect.content)
             Destroy(child.gameObject);
+
+        // 2. Clear our cache
+        sortedQuizJsons.Clear();
 
         string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
         if (!Directory.Exists(quizFolderPath))
             return;
 
-        // Use full paths stored in quizFilterCategories, or fallback to current path
+        // 3. Determine paths to search
         List<string> selectedPaths = new List<string>();
-
         if (quizFilterCategories.Count == 0)
         {
-            // No categories selected, do not load any quizzes
+            // Fallback: If nothing in filter, use current path (optional, based on your logic)
+            // If you want it empty when no filter, keep it empty. 
+            // But usually, you want to show the current folder's quizzes:
+            /* string currentPath = string.Join("/", pathStack.Reverse().Skip(1));
+               selectedPaths.Add(currentPath); 
+            */
+            // Based on your original code, if count == 0, we return.
             return;
         }
-
         selectedPaths.AddRange(quizFilterCategories);
 
         string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
         HashSet<string> addedFiles = new HashSet<string>();
-        List<QuizMakerNew.Quiz> quizzesToDisplay = new List<QuizMakerNew.Quiz>();
 
+        // We use a temporary list of tuples to handle sorting before saving
+        List<(QuizMakerNew.Quiz quizObj, string jsonString)> tempQuizList = new();
+
+        // 4. Load and Filter
         foreach (string file in quizFiles)
         {
             try
             {
                 string json = File.ReadAllText(file);
                 QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
+
                 if (quiz == null || string.IsNullOrEmpty(quiz.category))
                     continue;
 
@@ -143,7 +156,7 @@ public class CategoryEditor : MonoBehaviour
                     {
                         if (!addedFiles.Contains(file))
                         {
-                            quizzesToDisplay.Add(quiz);
+                            tempQuizList.Add((quiz, json));
                             addedFiles.Add(file);
                         }
                         break;
@@ -156,50 +169,49 @@ public class CategoryEditor : MonoBehaviour
             }
         }
 
-        // Apply sorting from dropdown
-        int sortMode = quizSortDropdown.value;
+        // 5. Apply Sorting
+        int sortMode = quizSortDropdown.value; // 0=A-Z, 1=Z-A, 2=Random
 
-        // 0 = A to Z
-        // 1 = Z to A
-        // 2 = Random
         if (sortMode == 0)
         {
-            quizzesToDisplay = quizzesToDisplay
-                .OrderBy(q => q.quizName)
-                .ToList();
+            tempQuizList = tempQuizList.OrderBy(x => x.quizObj.quizName).ToList();
         }
         else if (sortMode == 1)
         {
-            quizzesToDisplay = quizzesToDisplay
-                .OrderByDescending(q => q.quizName)
-                .ToList();
+            tempQuizList = tempQuizList.OrderByDescending(x => x.quizObj.quizName).ToList();
         }
         else if (sortMode == 2)
         {
             System.Random rng = new System.Random();
-            quizzesToDisplay = quizzesToDisplay
-                .OrderBy(q => rng.Next())
-                .ToList();
+            tempQuizList = tempQuizList.OrderBy(x => rng.Next()).ToList();
         }
 
-        foreach (var quiz in quizzesToDisplay)
+        // 6. Populate UI and Cache the JSONs
+        foreach (var item in tempQuizList)
         {
+            // Add to our cached list for StartQuizz to use
+            sortedQuizJsons.Add(item.jsonString);
+
+            // Build UI
             GameObject quizItem = new GameObject("QuizItem", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(Button));
             quizItem.transform.SetParent(quizScrollRect.content, false);
 
             TextMeshProUGUI text = quizItem.GetComponent<TextMeshProUGUI>();
-            text.text = quiz.quizName;
+            text.text = item.quizObj.quizName;
             text.fontSize = 20;
             text.enableWordWrapping = true;
 
             var quizBtn = quizItem.GetComponent<Button>();
-            var capturedQuiz = quiz;
+            var capturedQuiz = item.quizObj; // Capture for lambda
             quizBtn.onClick.AddListener(() =>
             {
                 quizMaker.OpenQuiz(capturedQuiz);
                 navigation.ShowPanel(navigation.link[1].panel);
             });
         }
+
+        // Update start button interactivity
+        startQuizz.interactable = sortedQuizJsons.Count > 0;
     }
 
     // Keep the original (misspelled) method name for compatibility, but update its implementation.
@@ -396,70 +408,9 @@ public class CategoryEditor : MonoBehaviour
 
     public void StartQuizz()
     {
-        string quizFolderPath = Path.Combine(Application.persistentDataPath, "quizzes");
-        if (!Directory.Exists(quizFolderPath))
+        if (sortedQuizJsons.Count == 0)
         {
-            Debug.LogWarning("No quizzes folder found.");
-            return;
-        }
-
-        // Determine selected category paths
-        List<string> selectedPaths = new List<string>();
-        if (quizFilterCategories.Count > 0)
-        {
-            selectedPaths.AddRange(quizFilterCategories);
-        }
-        else
-        {
-            string currentCategoryPath = string.Join("/", pathStack.Reverse().Skip(1));
-            selectedPaths.Add(currentCategoryPath);
-        }
-
-        string[] quizFiles = Directory.GetFiles(quizFolderPath, "*.json");
-        List<(QuizMakerNew.Quiz quiz, string filePath)> matchedQuizzes = new List<(QuizMakerNew.Quiz, string)>();
-        HashSet<string> addedFiles = new HashSet<string>();
-
-        bool unlimited = (int)startAmount.value == -1;
-        int limit = unlimited ? int.MaxValue : Mathf.Max(1, (int)startAmount.value);
-        int count = 0;
-
-        foreach (string file in quizFiles)
-        {
-            if (!unlimited && count >= limit)
-                break;
-
-            try
-            {
-                string json = File.ReadAllText(file);
-                QuizMakerNew.Quiz quiz = JsonUtility.FromJson<QuizMakerNew.Quiz>(json);
-                if (quiz == null || string.IsNullOrEmpty(quiz.category))
-                    continue;
-
-                foreach (string catPath in selectedPaths)
-                {
-                    if (string.Equals(quiz.category, catPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!addedFiles.Contains(file))
-                        {
-                            matchedQuizzes.Add((quiz, file));
-                            addedFiles.Add(file);
-                            count++;
-
-                            if (!unlimited && count >= limit)
-                                break;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning("Failed to load quiz file " + file + ": " + e.Message);
-            }
-        }
-
-        if (matchedQuizzes.Count == 0)
-        {
-            Debug.LogWarning("No quizzes found for the selected categories.");
+            Debug.LogWarning("No quizzes available to start.");
             return;
         }
 
@@ -469,13 +420,17 @@ public class CategoryEditor : MonoBehaviour
             return;
         }
 
+        // 1. Determine how many to play
+        bool unlimited = (int)startAmount.value == -1;
+        int limit = unlimited ? sortedQuizJsons.Count : Mathf.Max(1, (int)startAmount.value);
+
+        // 2. Slice the cached list
+        // This respects the exact order (Random, A-Z) currently visible in the UI
+        List<string> quizzesToPlay = sortedQuizJsons.Take(limit).ToList();
+
+        // 3. Launch Player
         quizPlayer.gameObject.SetActive(true);
-
-        List<string> quizJsonList = new List<string>();
-        foreach (var entry in matchedQuizzes)
-            quizJsonList.Add(File.ReadAllText(entry.filePath));
-
-        quizPlayer.SetMultipleJsonStrings(quizJsonList);
+        quizPlayer.SetMultipleJsonStrings(quizzesToPlay);
     }
 
 
