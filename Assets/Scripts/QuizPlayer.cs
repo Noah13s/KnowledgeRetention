@@ -155,7 +155,7 @@ public class QuizPlayer : MonoBehaviour
 
     public void CheckInput()
     {
-        mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Be permissive the answer doesn't need to be exactly the one awaited and can be miss spelled, but if its missing context or words return partial. Answer by true or false or partial. If the anwser is missing some context or words return partial or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}. Respond either true, false or partial. Prioritize true and false. By default return false.");
+        mobileDemo.onInputFieldSubmit($"Check if the answered response corresponds to the awaited response.Be permissive the answer doesn't need to be exactly the one awaited, it can be miss spelled and have different casing, but if its missing context or words return partial. Answer by true or false or partial. If the anwser is missing some context or words return partial or false. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}. Respond either true, false or partial. Prioritize true and false. By default return false.");
         inputConfirmButton.interactable = false;
 
         // Remove previous listeners to avoid duplicates
