@@ -174,7 +174,7 @@ public class QuizPlayer : MonoBehaviour
             else if (result == "false")
             {
                 fieldImage.color = Color.red;
-                mobileDemo.onInputFieldSubmit($"Briefly explain why the answered response is false and what was the awaited response. The awaited response is {currentQuiz.inputAnswer}.The answered response is {answerInputField.text}");
+                mobileDemo.onInputFieldSubmit($"Briefly explain what was the awaited response.");
                 mobileDemo.onAIResponseComplete.RemoveAllListeners();
                 mobileDemo.onAIResponseComplete.AddListener(() =>
                 {
