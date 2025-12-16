@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/QuizMaker2.unity
     guid: 2652756b954655549b11fad8973f67a9
   m_configObjects: {}
