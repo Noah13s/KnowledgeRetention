@@ -680,6 +680,78 @@ public class ImageLibrary : MonoBehaviour
     // MODIFIED GOOGLE DRIVE LOGIC START
     // -------------------------------------------------------------
 
+    public void UpdateBackupOnGoogleDrive(string existingFileId)
+    {
+        try
+        {
+            string sourceDir = Application.persistentDataPath;
+            string tempDir = Path.Combine(sourceDir, "ExportPersistentTemp");
+            string archivePath1 = Path.Combine(sourceDir, "PersistentDataBackup.zip");
+
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, true);
+            Directory.CreateDirectory(tempDir);
+
+            // Copy categories.json
+            string categoriesSrc = Path.Combine(sourceDir, "categories.json");
+            string categoriesDst = Path.Combine(tempDir, "categories.json");
+            if (File.Exists(categoriesSrc))
+                File.Copy(categoriesSrc, categoriesDst, true);
+
+            // Copy Images folder
+            string imagesSrc = Path.Combine(sourceDir, "Images");
+            string imagesDst = Path.Combine(tempDir, "Images");
+            if (Directory.Exists(imagesSrc))
+                CopyDirectoryRecursive(imagesSrc, imagesDst);
+
+            // Copy quizzes folder
+            string quizzesSrc = Path.Combine(sourceDir, "quizzes");
+            string quizzesDst = Path.Combine(tempDir, "quizzes");
+            if (Directory.Exists(quizzesSrc))
+                CopyDirectoryRecursive(quizzesSrc, quizzesDst);
+
+            if (File.Exists(archivePath1))
+                File.Delete(archivePath1);
+
+            ZipFile.CreateFromDirectory(tempDir, archivePath1);
+            Directory.Delete(tempDir, true);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Error exporting persistent data: " + e.Message);
+        }
+
+        string archivePath = Path.Combine(Application.persistentDataPath, "PersistentDataBackup.zip");
+
+        if (!System.IO.File.Exists(archivePath))
+        {
+            Debug.LogError("Backup zip not found.");
+            return;
+        }
+
+        byte[] fileContent = System.IO.File.ReadAllBytes(archivePath);
+
+        // Prepare metadata (only Content is strictly required for update, 
+        // but you can include Name if you want to rename it simultaneously)
+        var driveFile = new UnityGoogleDrive.Data.File
+        {
+            Content = fileContent
+        };
+
+        // Use Update instead of Create
+        var request = GoogleDriveFiles.Update(existingFileId, driveFile);
+
+        request.OnDone += (UnityGoogleDrive.Data.File result) =>
+        {
+            if (request.IsError)
+                Debug.LogError($"Update failed: {request.Error}");
+            else
+                Debug.Log($"New version uploaded! ID: {result.Id}");
+        };
+
+        request.Send();
+    }
+
     public void ImportFromGoogleDrive(string fileId)
     {
         // Réinitialiser la barre de progression
