@@ -6,8 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
+// Added namespace for the Google Drive plugin
+using UnityGoogleDrive;
 
 public class ImageLibrary : MonoBehaviour
 {
@@ -57,7 +58,7 @@ public class ImageLibrary : MonoBehaviour
         sortDropdown.onValueChanged.AddListener(OnSortOptionChanged);
         RefreshImageList();
 
-        //StartCoroutine(CheckInternetRoutine());
+        StartCoroutine(CheckInternetRoutine());
     }
 
     private void OnEnable()
@@ -98,62 +99,7 @@ public class ImageLibrary : MonoBehaviour
 
     private void BuildImageLibrary()
     {
-        if (imageScrollRect == null) { return; }
-        string imagesFolderPath = Path.Combine(Application.persistentDataPath, "Images");
-
-        foreach (var images in GetImageFilePaths())
-        {
-            var _imagePrefab = Instantiate(imagePrefab, imageScrollRect.content);
-            var imageElemScript = _imagePrefab.GetComponent<ImageElement>();
-
-            imageElemScript.imageName.text = Path.GetFileName(images);
-            imageElemScript.imagePath = images;
-
-            Toggle t = imageElemScript.toggle;
-            if (t != null)
-            {
-                // assign to group if in Select mode
-                if (mode == Mode.Select)
-                {
-                    EnsureToggleGroup();
-                    t.group = selectionGroup;
-                }
-                else
-                {
-                    t.group = null;
-                }
-
-                // Ensure ImageElement selection reflects toggle and update selection count on change
-                t.isOn = imageElemScript.isSelected;
-                t.onValueChanged.AddListener((bool value) =>
-                {
-                    if (imageElemScript != null)
-                        imageElemScript.isSelected = value;
-                    NumberOfSelection();
-                });
-            }
-
-            // Read image bytes
-            byte[] imageBytes = File.ReadAllBytes(images);
-
-            // Create a Texture2D and load the image data
-            Texture2D texture = new Texture2D(2, 2);
-            if (!texture.LoadImage(imageBytes))
-            {
-                Debug.LogError("Failed to load image from bytes!");
-                return;
-            }
-
-            // Create a new Sprite from the texture
-            Sprite sprite = Sprite.Create(
-                texture,
-                new Rect(0, 0, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f)
-            );
-
-            // Assign the sprite to the UI Image
-            imageElemScript.image.sprite = sprite;
-        }
+        BuildImageLibrary(0);
     }
 
     private void BuildImageLibrary(int sortMode = 0)
@@ -294,7 +240,7 @@ public class ImageLibrary : MonoBehaviour
         SetupMode();
         BuildImageLibrary(sortDropdown.value);
         HandleTools();
-    } 
+    }
 
     private void SetupMode()
     {
@@ -349,7 +295,7 @@ public class ImageLibrary : MonoBehaviour
             var elem = child.GetComponent<ImageElement>();
             if (elem != null && elem.isSelected)
             {
-                SelectedElements.Add(elem); 
+                SelectedElements.Add(elem);
                 input.text = Path.GetFileNameWithoutExtension(elem.imageName.text);
             }
         }
@@ -730,43 +676,68 @@ public class ImageLibrary : MonoBehaviour
         }, fileTypes);
     }
 
+    // -------------------------------------------------------------
+    // MODIFIED GOOGLE DRIVE LOGIC START
+    // -------------------------------------------------------------
+
     public void ImportFromGoogleDrive(string fileId)
     {
-        StartCoroutine(DownloadAndImport(fileId));
-    }
-
-    private IEnumerator DownloadAndImport(string fileId)
-    {
-        string url = "https://drive.google.com/uc?export=download&id=" + fileId;
-        string tempZipPath = Path.Combine(Application.temporaryCachePath, "persistent.zip");
-
-        if (File.Exists(tempZipPath))
-            File.Delete(tempZipPath);
-
-        UnityWebRequest req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
-        req.downloadHandler = new DownloadHandlerFile(tempZipPath);
-
-        req.SendWebRequest();
-
-        while (!req.isDone)
-        {
-            if (dataUpdateProgress != null)
-                dataUpdateProgress.value = req.downloadProgress;
-
-            yield return null;
-        }
-
-        if (req.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError("Download failed: " + req.error);
-            yield break;
-        }
-
+        // Réinitialiser la barre de progression
         if (dataUpdateProgress != null)
-            dataUpdateProgress.value = 1f;
+            dataUpdateProgress.value = 0f;
 
-        ImportPersistentDataZip(tempZipPath);
+        // 1. Créer la requête
+        var request = GoogleDriveFiles.Download(fileId);
+
+        // 2. S'abonner à OnDone
+        request.OnDone += (UnityGoogleDrive.Data.File fileMetadata) =>
+        {
+            // 3. Vérifier les erreurs sur la requête
+            if (request.IsError)
+            {
+                Debug.LogError($"Google Drive Download Error: {request.Error}");
+                return;
+            }
+
+            // 4. RÉCUPÉRATION DES OCTETS : 
+            // Dans ce package, le contenu binaire est stocké dans 'Content' de l'objet File retourné.
+            byte[] downloadedBytes = fileMetadata.Content;
+
+            if (downloadedBytes == null || downloadedBytes.Length == 0)
+            {
+                Debug.LogError("Le contenu téléchargé est vide (fileMetadata.Content est nul ou vide).");
+                return;
+            }
+
+            // Chemin temporaire pour le ZIP
+            string tempZipPath = Path.Combine(Application.temporaryCachePath, "persistent.zip");
+
+            try
+            {
+                if (System.IO.File.Exists(tempZipPath))
+                    System.IO.File.Delete(tempZipPath);
+
+                System.IO.File.WriteAllBytes(tempZipPath, downloadedBytes);
+
+                if (dataUpdateProgress != null)
+                    dataUpdateProgress.value = 1f;
+
+                // Extraction du ZIP
+                ImportPersistentDataZip(tempZipPath);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Erreur lors de l'écriture du fichier : {ex.Message}");
+            }
+        };
+
+        // 5. Envoyer la requête
+        request.Send();
     }
+
+    // -------------------------------------------------------------
+    // MODIFIED GOOGLE DRIVE LOGIC END
+    // -------------------------------------------------------------
 
     private IEnumerator CheckInternetRoutine()
     {
