@@ -20,13 +20,12 @@ MonoBehaviour:
     auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
     client_secret: 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
     redirect_uris:
-    - http://localhost:49255
     - http://localhost
   uriSchemeClientCredentials:
-    clientId: 
-    reversedClientId: 
-    plistVersion: 
-    bundleId: 
+    clientId: 530291476755-cop7e9e50lc82uk0e8o5v2l3dkhm1hs0.apps.googleusercontent.com
+    reversedClientId: com.googleusercontent.apps.530291476755-cop7e9e50lc82uk0e8o5v2l3dkhm1hs0
+    plistVersion: 1
+    bundleId: com.n04h.knowledgeretention
   accessScopes:
   - https://www.googleapis.com/auth/drive
   - https://www.googleapis.com/auth/drive.appdata

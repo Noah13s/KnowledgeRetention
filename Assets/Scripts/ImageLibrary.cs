@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 // Added namespace for the Google Drive plugin
 using UnityGoogleDrive;
@@ -599,7 +601,7 @@ public class ImageLibrary : MonoBehaviour
         }
     }
 
-    private void ImportPersistentDataZip(string path)
+    private void DataArchiveImportFromPath(string path)
     {
         if (!File.Exists(path))
         {
@@ -629,7 +631,7 @@ public class ImageLibrary : MonoBehaviour
             Debug.LogError("Error importing persistent data: " + e.Message);
         }
     }
-    public void ImportPersistentDataZip()
+    public void ManualDataArchiveImport()
     {
         string[] fileTypes = {
         NativeFilePicker.ConvertExtensionToFileType("zip")
@@ -752,7 +754,7 @@ public class ImageLibrary : MonoBehaviour
         request.Send();
     }
 
-    public void ImportFromGoogleDrive(string fileId)
+    public void ImportFromGoogleDriveAPI(string fileId)
     {
         // Réinitialiser la barre de progression
         if (dataUpdateProgress != null)
@@ -795,7 +797,7 @@ public class ImageLibrary : MonoBehaviour
                     dataUpdateProgress.value = 1f;
 
                 // Extraction du ZIP
-                ImportPersistentDataZip(tempZipPath);
+                DataArchiveImportFromPath(tempZipPath);
             }
             catch (System.Exception ex)
             {
@@ -818,6 +820,87 @@ public class ImageLibrary : MonoBehaviour
             bool connected = Application.internetReachability != NetworkReachability.NotReachable;
             updateData.interactable = connected;
             yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public void DownloadAndUpdateDataFromID()
+    {
+        StartCoroutine(DownloadRoutine());
+    }
+
+    private string fileId = "1idh6hNWI3I5r4CyGQsPyVrFp4sm0nmM1";
+    public string fileName = "PersistentDataBackup.zip";
+    private string savePath;
+
+    IEnumerator DownloadRoutine()
+    {
+        string url = $"https://drive.google.com/uc?export=download&id={fileId}";
+        string savePath = Path.Combine(Application.temporaryCachePath, fileName);
+
+        Debug.Log("Step 1: Requesting virus warning page...");
+
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        {
+            // Use a standard browser User-Agent
+            www.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36");
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Connection Error: " + www.error);
+                yield break;
+            }
+
+            string html = www.downloadHandler.text;
+
+            // Step 2: Extract the hidden 'uuid' from the HTML Form
+            // We look for: name="uuid" value="XXXX-XXXX-..."
+            Match uuidMatch = Regex.Match(html, "name=\"uuid\" value=\"([^\"]+)\"");
+
+            // We also verify the confirm value (usually just 't')
+            Match confirmMatch = Regex.Match(html, "name=\"confirm\" value=\"([^\"]+)\"");
+
+            if (uuidMatch.Success && confirmMatch.Success)
+            {
+                string uuid = uuidMatch.Groups[1].Value;
+                string confirm = confirmMatch.Groups[1].Value;
+
+                Debug.Log($"Form Data Found! UUID: {uuid}, Confirm: {confirm}");
+
+                // Step 3: Construct the final URL manually using the form data
+                // The action in your HTML is "https://drive.usercontent.google.com/download"
+                string finalUrl = $"https://drive.usercontent.google.com/download?id={fileId}&export=download&confirm={confirm}&uuid={uuid}";
+
+                yield return StartCoroutine(FinalDownload(finalUrl, savePath));
+            }
+            else
+            {
+                Debug.LogError("Could not parse the HTML form. Google might have changed the format again.");
+            }
+        }
+    }
+
+    IEnumerator FinalDownload(string url, string path)
+    {
+        Debug.Log("Starting Final Download...");
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        {
+            // IMPORTANT: Use DownloadHandlerFile to stream directly to disk
+            www.downloadHandler = new DownloadHandlerFile(path);
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                // Check the file size to confirm it's the real deal (27MB)
+                FileInfo info = new FileInfo(path);
+                Debug.Log($"SUCCESS! File downloaded to: {path}");
+                Debug.Log($"File Size: {info.Length / 1024 / 1024} MB");
+                DataArchiveImportFromPath(path);
+            }
+            else
+            {
+                Debug.LogError("Download failed: " + www.error);
+            }
         }
     }
 }

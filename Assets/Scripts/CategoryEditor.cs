@@ -23,6 +23,7 @@ public class CategoryEditor : MonoBehaviour
     [SerializeField] private TMP_Text currentPathLabel;
     [Header("Footer")]
     [SerializeField] private TMP_Dropdown quizSortDropdown;
+    [SerializeField] private Button RandomizeButton;
     [SerializeField] private Button startQuizz;
     [SerializeField] private SliderHandler startAmount;
     [Header("Setup")]
@@ -54,10 +55,6 @@ public class CategoryEditor : MonoBehaviour
     {
         categoriesJsonFilePath = Path.Combine(Application.persistentDataPath, "categories.json");
         quizzJsonFilePath = Path.Combine(Application.persistentDataPath, "");
-    }
-
-    private void Start()
-    {
         SetupSortDropdown();
         LoadCategories();
         EnterCategory(rootData.categories, "Root");
@@ -171,7 +168,7 @@ public class CategoryEditor : MonoBehaviour
 
         // 5. Apply Sorting
         int sortMode = quizSortDropdown.value; // 0=A-Z, 1=Z-A, 2=Random
-
+        RandomizeButton.gameObject.SetActive(false);
         if (sortMode == 0)
         {
             tempQuizList = tempQuizList.OrderBy(x => x.quizObj.quizName).ToList();
@@ -184,6 +181,7 @@ public class CategoryEditor : MonoBehaviour
         {
             System.Random rng = new System.Random();
             tempQuizList = tempQuizList.OrderBy(x => rng.Next()).ToList();
+            RandomizeButton.gameObject.SetActive(true);
         }
 
         // 6. Populate UI and Cache the JSONs
@@ -206,12 +204,17 @@ public class CategoryEditor : MonoBehaviour
             quizBtn.onClick.AddListener(() =>
             {
                 quizMaker.OpenQuiz(capturedQuiz);
-                navigation.ShowPanel(navigation.link[1].panel);
+                navigation.ShowPanel(navigation.link[1]);
             });
         }
 
         // Update start button interactivity
         startQuizz.interactable = sortedQuizJsons.Count > 0;
+    }
+
+    public void RandomizeQuizzList()
+    {
+        LoadQuizzes();
     }
 
     // Keep the original (misspelled) method name for compatibility, but update its implementation.

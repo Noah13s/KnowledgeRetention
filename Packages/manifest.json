@@ -2,6 +2,7 @@
   "dependencies": {
     "ai.undream.llm": "https://github.com/undreamai/LLMUnity.git",
     "com.elringus.unitygoogledrive": "https://github.com/elringus/unity-google-drive.git#package",
+    "com.google.external-dependency-manager": "https://github.com/googlesamples/unity-jar-resolver.git?path=upm",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.visualstudio": "2.0.25",
     "com.unity.nuget.newtonsoft-json": "3.2.1",

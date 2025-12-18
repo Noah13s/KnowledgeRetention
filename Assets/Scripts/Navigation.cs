@@ -22,6 +22,8 @@ public class Navigation : MonoBehaviour
     [Header("List of panels and their corresponding buttons")]
     public List<PanelButtonLink> link = new List<PanelButtonLink>();
 
+    public PanelButtonLink currentLink;
+
     void Awake()
     {
         // Cache default button colors
@@ -46,13 +48,13 @@ public class Navigation : MonoBehaviour
             if (item.button == null)
                 continue;
 
-            var targetPanel = item.panel;
-            item.button.onClick.AddListener(() => ShowPanel(targetPanel));
+            var targetLink = item;
+            item.button.onClick.AddListener(() => ShowPanel(targetLink));
         }
 
         if (selectFirstOnStart && link.Count > 0 && link[0].panel != null)
         {
-            ShowPanel(link[0].panel);
+            ShowPanel(link[0]);
         }
         else
         {
@@ -61,8 +63,10 @@ public class Navigation : MonoBehaviour
         }
     }
 
-    public void ShowPanel(GameObject panelToShow)
+    public void ShowPanel(PanelButtonLink _link)
     {
+        currentLink = _link;
+        var panelToShow = _link.panel;
         foreach (var item in link)
         {
             if (item.panel == null)
@@ -92,6 +96,13 @@ public class Navigation : MonoBehaviour
                 }
             }
         }
+    }
+    public int GetCurrentIndex()
+    {
+        if (currentLink == null)
+            return -1;
+
+        return link.IndexOf(currentLink);
     }
 
     void HideAll()
