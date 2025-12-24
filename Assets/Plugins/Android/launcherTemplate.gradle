@@ -20,6 +20,7 @@ android {
 		manifestPlaceholders = [appAuthRedirectScheme: 'com.mydomain.myapp']
         minSdkVersion **MINSDKVERSION**
         targetSdkVersion **TARGETSDKVERSION**
+        manifestPlaceholders = [appAuthRedirectScheme: "com.n04h.knowledgeretention"]
         applicationId '**APPLICATIONID**'
         ndk {
             abiFilters **ABIFILTERS**
