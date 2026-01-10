@@ -20,6 +20,7 @@ public class QuizMakerNew : MonoBehaviour
     [SerializeField] private TMP_Dropdown questionType;
     [SerializeField] private TMP_InputField questionInput;
     [SerializeField] private Image questionImage;
+    [SerializeField] private TMP_InputField webSearchInput;
     [Header("Answer")]
     [SerializeField] private TMP_Dropdown answerType;
     [SerializeField] private GameObject answerPrefab; 
@@ -49,6 +50,7 @@ public class QuizMakerNew : MonoBehaviour
         public string questionType;// text // text + image //
         public string question;
         public string questionImage;
+        public string webSearch;
         public string answerType;// text // image // input //
         public string inputAnswerType;// Anything // Numbers // Date
         public string inputAnswer;
@@ -70,9 +72,11 @@ public class QuizMakerNew : MonoBehaviour
         {
             case 0:
                 questionImage.gameObject.SetActive(false);
+                webSearchInput.gameObject.SetActive(false);
                 break;
             case 1:
                 questionImage.gameObject.SetActive(true);
+                webSearchInput.gameObject.SetActive(true);
                 break;
         }
     }
@@ -276,6 +280,8 @@ public class QuizMakerNew : MonoBehaviour
         _questionImagePath = _quiz.questionImage;
         ImageSetup(_quiz.questionImage);
 
+        webSearchInput.text = _quiz.webSearch;
+
         // Set question text
         questionInput.text = _quiz.question;
 
@@ -425,6 +431,7 @@ public class QuizMakerNew : MonoBehaviour
         quiz.answerType = answerType.options[answerType.value].text;
         quiz.inputAnswerType = inputAnswerType.options[inputAnswerType.value].text;
         quiz.inputAnswer = inputAnswer.text;
+        quiz.webSearch = webSearchInput.text;
         if (!string.IsNullOrEmpty(_questionImagePath))
         {
             var _path1 = _questionImagePath.Replace("\\", "/");

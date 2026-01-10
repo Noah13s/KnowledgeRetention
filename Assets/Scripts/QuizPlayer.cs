@@ -25,6 +25,7 @@ public class QuizPlayer : MonoBehaviour
     [Header("Setup")]
     [SerializeField] private AIHandler mobileDemo;
     [SerializeField] private TextMeshProUGUI aiResponse;
+    [SerializeField] private WebSearchIntegration webSearchIntegration;
 
     private List<Quiz> loadedQuizzes = new();
     private int currentQuizIndex = 0;
@@ -54,7 +55,7 @@ public class QuizPlayer : MonoBehaviour
             Debug.LogWarning("No valid quizzes loaded.");
             return;
         }
-
+        webSearchIntegration.ResetSearch();
         currentQuizIndex = 0;
         StartNextQuiz();
     }
@@ -107,6 +108,10 @@ public class QuizPlayer : MonoBehaviour
 
         Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         questionImage.sprite = sprite;
+
+        // Setup web image search
+        
+        webSearchIntegration.searchQuery = currentQuiz.webSearch;
     }
 
     private void ShowInputQuestion()
