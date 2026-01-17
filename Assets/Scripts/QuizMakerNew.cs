@@ -252,6 +252,8 @@ public class QuizMakerNew : MonoBehaviour
         // Set quiz name
         quizName.text = "";
 
+        webSearchInput.text = "";
+
         // Set question type dropdown
         questionType.value = 0;
 
@@ -261,11 +263,16 @@ public class QuizMakerNew : MonoBehaviour
         // Set answer type dropdown
         answerType.value = 0;
 
+        inputAnswer.text = "";
+
         // Set category dropdown
         categoryTMP.value = 1;
 
         // Clear any existing answers
         ClearAnswers();
+
+        categoryManager.LoadCategories();
+        LoadCategories(); // <-- Add this so it updates dropdown after loading
     }
 
     public void OpenQuiz(Quiz _quiz)
@@ -329,6 +336,8 @@ public class QuizMakerNew : MonoBehaviour
         // Re-enable add answer button if below limit
         addAnswer.interactable = answersList.transform.childCount < 4;
         AnswersValidityCheck();
+        categoryManager.LoadCategories();
+        LoadCategories(); // <-- Add this so it updates dropdown after loading
     }
 
     public void DeleteQuiz()
