@@ -85,6 +85,13 @@ public class QuizPlayer : MonoBehaviour
         {
             ShowQuestion();
         }
+        webSearchIntegration.ResetSearch();
+    }
+
+    public void ExitQuiz()
+    {
+        quizCompleted = true;
+        OnAllQuizzesCompleted();
     }
 
     private void UpdateQuizCounterUI(int current, int total)
