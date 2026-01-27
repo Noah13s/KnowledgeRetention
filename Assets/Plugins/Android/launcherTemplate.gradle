@@ -17,7 +17,6 @@ android {
     }
 
     defaultConfig {
-		manifestPlaceholders = [appAuthRedirectScheme: 'com.mydomain.myapp']
         minSdkVersion **MINSDKVERSION**
         targetSdkVersion **TARGETSDKVERSION**
         manifestPlaceholders = [appAuthRedirectScheme: "com.n04h.knowledgeretention"]

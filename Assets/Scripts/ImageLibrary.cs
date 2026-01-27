@@ -686,6 +686,7 @@ public class ImageLibrary : MonoBehaviour
     {
         try
         {
+            Debug.Log("Creating backup zip...");
             string sourceDir = Application.persistentDataPath;
             string tempDir = Path.Combine(sourceDir, "ExportPersistentTemp");
             string archivePath1 = Path.Combine(sourceDir, "PersistentDataBackup.zip");
