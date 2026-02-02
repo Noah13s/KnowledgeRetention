@@ -5298,7 +5298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c563a3fcce6d54c4c877d820faf6e5e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  llmCharacter: {fileID: 405096644}
+  llmAgent: {fileID: 887331442}
   ChatPanel: {fileID: 196000632}
   playerText: {fileID: 1667504525}
   answerInput: {fileID: 33766878}
@@ -13468,7 +13468,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &405096644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13478,24 +13478,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 405096643}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6c87a428fd5d0be9bbc686bdc8c3c2, type: 3}
+  m_Script: {fileID: 11500000, guid: 9a7e2b282042f31439e8018a0e8e746b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  advancedOptions: 0
-  remote: 0
+  advancedOptions: 1
+  _remote: 0
   _llm: {fileID: 459297251}
-  APIKey: 
-  host: localhost
-  port: 13333
-  numRetries: 10
-  save: 
-  saveCache: 0
-  debugPrompt: 0
-  numPredict: 150
-  slot: -1
-  grammar: 
-  grammarJSON: 
-  cachePrompt: 0
+  _APIKey: 
+  _host: localhost
+  _port: 13333
+  numRetries: 5
+  _grammar: 
+  numPredict: -1
+  cachePrompt: 1
   seed: 0
   temperature: 0.2
   topK: 40
@@ -13506,26 +13501,18 @@ MonoBehaviour:
   frequencyPenalty: 0
   typicalP: 1
   repeatLastN: 64
-  penalizeNl: 1
-  penaltyPrompt: 
   mirostat: 0
   mirostatTau: 5
   mirostatEta: 0.1
   nProbs: 0
   ignoreEos: 0
-  nKeep: -1
-  stop: []
-  stream: 1
-  playerName: user
-  AIName: assistant
-  prompt: You are an expert assessment designer. Act as a program or a robot be as
-    direct as possible and as brief as possible. Do not include unecessary comments
-    about what is asked of you. You just provide an answer. Do not format your response.
-    Only respond with true or false
-  setNKeepToPrompt: 1
-  chat: []
-  grammarString: 
-  grammarJSONString: 
+  save: 
+  debugPrompt: 0
+  _slot: -1
+  _systemPrompt: You are an expert assessment designer. Act as a program or a robot
+    be as direct as possible and as brief as possible. Do not include unecessary
+    comments about what is asked of you. You just provide an answer. Do not format
+    your response. Only respond with true or false
 --- !u!4 &405096645
 Transform:
   m_ObjectHideFlags: 0
@@ -15527,30 +15514,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a50e3140c3ecaaf1c848dbf141cc2074, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  advancedOptions: 0
-  remote: 0
-  port: 13333
-  numThreads: -1
-  numGPULayers: 0
-  debug: 0
-  parallelPrompts: -1
+  advancedOptions: 1
+  _remote: 0
+  _port: 13333
+  _APIKey: 
+  _SSLCert: 
+  _SSLKey: 
+  _numThreads: -1
+  _numGPULayers: 0
+  _parallelPrompts: -1
+  _contextSize: 300
+  _batchSize: 512
+  _model: Qwen3-1.7B-Q4_K_M.gguf
+  _flashAttention: 0
+  _reasoning: 0
+  _lora: 
+  _loraWeights: 
   dontDestroyOnLoad: 1
-  contextSize: 300
-  batchSize: 512
-  model: Qwen3-1.7B-Q4_K_M.gguf
-  chatTemplate: qwen3
-  lora: 
-  loraWeights: 
-  flashAttention: 0
-  APIKey: 
-  SSLCert: 
-  SSLCertPath: 
-  SSLKey: 
-  SSLKeyPath: 
+  _embeddingsOnly: 0
+  _embeddingLength: 2048
   minContextLength: 0
   maxContextLength: 40960
-  embeddingsOnly: 0
-  embeddingLength: 2048
 --- !u!1 &461864892
 GameObject:
   m_ObjectHideFlags: 0
@@ -29677,6 +29661,82 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Padding: {x: -8, y: -5, z: -8, w: -5}
   m_Softness: {x: 0, y: 0}
+--- !u!1 &887331441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 887331443}
+  - component: {fileID: 887331442}
+  m_Layer: 0
+  m_Name: LLM Agent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &887331442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887331441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4326d5ae3b03ff55847035351559f4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  advancedOptions: 1
+  _remote: 0
+  _llm: {fileID: 459297251}
+  _APIKey: 
+  _host: localhost
+  _port: 13333
+  numRetries: 5
+  _grammar: 
+  numPredict: -1
+  cachePrompt: 1
+  seed: 0
+  temperature: 0.2
+  topK: 40
+  topP: 0.9
+  minP: 0.05
+  repeatPenalty: 1.1
+  presencePenalty: 0
+  frequencyPenalty: 0
+  typicalP: 1
+  repeatLastN: 64
+  mirostat: 0
+  mirostatTau: 5
+  mirostatEta: 0.1
+  nProbs: 0
+  ignoreEos: 0
+  save: 
+  debugPrompt: 0
+  _slot: -1
+  _systemPrompt: You are an expert assessment designer. Act as a program or a robot
+    be as direct as possible and as brief as possible. Do not include unecessary
+    comments about what is asked of you. You just provide an answer. Do not format
+    your response. Only respond with true or false
+--- !u!4 &887331443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887331441}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1272323174}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &889682630
 GameObject:
   m_ObjectHideFlags: 0
@@ -42197,6 +42257,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 405096645}
+  - {fileID: 887331443}
   - {fileID: 459297250}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

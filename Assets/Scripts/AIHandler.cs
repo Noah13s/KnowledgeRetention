@@ -9,7 +9,7 @@ namespace LLMUnitySamples
 {
     public class AIHandler : MonoBehaviour
     {
-        public LLMCharacter llmCharacter;
+        public LLMAgent llmAgent;
 
         public GameObject ChatPanel;
         public TMP_InputField playerText;
@@ -51,7 +51,7 @@ namespace LLMUnitySamples
         async Task WarmUp()
         {
             AIText.text += $"Warming up the model...";
-            await llmCharacter.Warmup();
+            await llmAgent.Warmup();
             AIText.text = "";
             AIReplyComplete();
         }
@@ -67,7 +67,7 @@ namespace LLMUnitySamples
             playerText.interactable = false;
             answerInput.interactable = false;
             AIText.text = "...";
-            _ = llmCharacter.Chat(message, SetAIText, AIReplyComplete);
+            _ = llmAgent.Chat(message, SetAIText, AIReplyComplete);
         }
 
         public void onInputFieldSubmit(TMP_InputField message)
@@ -75,7 +75,7 @@ namespace LLMUnitySamples
             playerText.interactable = false;
             answerInput.interactable = false;
             AIText.text = "...";
-            _ = llmCharacter.Chat(message.text, SetAIText, AIReplyComplete);
+            _ = llmAgent.Chat(message.text, SetAIText, AIReplyComplete);
         }
 
         public void SetAIText(string text)
@@ -92,9 +92,14 @@ namespace LLMUnitySamples
             onAIResponseComplete?.Invoke();
         }
 
+        async public void ClearHistory()
+        {
+            await llmAgent.ClearHistory();
+        }
+
         public void CancelRequests()
         {
-            llmCharacter.CancelRequests();
+            llmAgent.CancelRequests();
             AIReplyComplete();
         }
 
@@ -108,14 +113,14 @@ namespace LLMUnitySamples
         bool onValidateInfo = true;
         void OnValidate()
         {
-            if (onValidateWarning && !llmCharacter.remote && llmCharacter.llm != null && llmCharacter.llm.model == "")
+            if (onValidateWarning && !llmAgent.remote && llmAgent.llm != null && llmAgent.llm.model == "")
             {
-                Debug.LogWarning($"Please select a model in the {llmCharacter.llm.gameObject.name} GameObject!");
+                Debug.LogWarning($"Please select a model in the {llmAgent.llm.gameObject.name} GameObject!");
                 onValidateWarning = false;
             }
             if (onValidateInfo)
             {
-                Debug.Log($"Select 'Download On Start' in the {llmCharacter.llm.gameObject.name} GameObject to download the models when the app starts.");
+                Debug.Log($"Select 'Download On Start' in the {llmAgent.llm.gameObject.name} GameObject to download the models when the app starts.");
                 onValidateInfo = false;
             }
         }

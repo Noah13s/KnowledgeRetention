@@ -4,8 +4,10 @@
       "version": "https://github.com/undreamai/LLMUnity.git",
       "depth": 0,
       "source": "git",
-      "dependencies": {},
-      "hash": "891497bf8ad6d10f9005b421c31b6b19a9d112df"
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.0.2"
+      },
+      "hash": "180b57d2f7f6a33f7729171cf3e32469a1be6451"
     },
     "com.elringus.unitygoogledrive": {
       "version": "https://github.com/elringus/unity-google-drive.git#package",

@@ -182,6 +182,7 @@ public class QuizPlayer : MonoBehaviour
             if (result == "true")
             {
                 fieldImage.color = Color.green;
+                mobileDemo.ClearHistory();
             }
             else if (result == "false")
             {
@@ -191,6 +192,7 @@ public class QuizPlayer : MonoBehaviour
                 mobileDemo.onAIResponseComplete.AddListener(() =>
                 {
                     answerInputField.text = aiResponse.text;
+                    mobileDemo.ClearHistory();
                 });
             }
             else if (result=="partial")
@@ -201,6 +203,7 @@ public class QuizPlayer : MonoBehaviour
                 mobileDemo.onAIResponseComplete.AddListener(() =>
                 {
                     answerInputField.text = aiResponse.text;
+                    mobileDemo.ClearHistory();
                 });
             }
             else
