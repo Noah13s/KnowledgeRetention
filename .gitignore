@@ -72,3 +72,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /Assets/StreamingAssets/undreamai-v1.2.5-llamacpp
 /Assets/StreamingAssets
+
+# Google OAuth credentials
+Assets/client_secret_*.json
+Assets/client_secret_*.json.meta
